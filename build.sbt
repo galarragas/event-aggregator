@@ -50,7 +50,7 @@ val jest = Seq( "io.searchbox" % "jest" % "2.0.0" )
 val avro = Seq("org.apache.avro" % "avro" % "1.7.7")
 
 val testCore = Seq(
-  "org.scalatest" %% "scalatest" % "2.2.4" % "test, it",
+  "org.scalatest" %% "scalatest" % "3.0.0" % "test, it",
   "org.mockito" % "mockito-all" % "1.9.5" % "test, it",
   "com.fasterxml.jackson.jaxrs" % "jackson-jaxrs-json-provider" % "2.3.2" % "it"
 )

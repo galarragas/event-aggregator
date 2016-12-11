@@ -47,6 +47,7 @@ The project is still incomplete
 * AVRO Schemas are assumed to be managed via __Confluent's Schema Registry__
 * Connection to Elasticsearch is protected via a __Circuit Breaker__ (connection to the Schema Registry is not since the current client doesn't suport)
 * The target Elasticsearch index where the events are stored to is changed every day
+* Configurable path for event timestamp and ID extraction
 
 ## Extensions
 
