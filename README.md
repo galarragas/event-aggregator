@@ -39,15 +39,16 @@ The project is still incomplete
 
 ## Features
 
-* Simple command line application deployed as a __Docker Container__. 
+* Simple command line application deployed as a __Docker Container__
 * Designed to support __workload sharing__ through the deployment of multiple instances
 * Aggregates events from __multiple topics__
 * Supports writing to Elasticsearch with both __native Elasticsearch__ protocol or __REST over HTTP__ protocol (the last one is required if you are trying to integrate with the AWS managed Elasticsearch facility)
 * Events are assumed to be written in __AVRO format__, you could extend the tool to support different format and I will be more than happy to merge your PR
 * AVRO Schemas are assumed to be managed via __Confluent's Schema Registry__
 * Connection to Elasticsearch is protected via a __Circuit Breaker__ (connection to the Schema Registry is not since the current client doesn't suport)
-* The target Elasticsearch index where the events are stored to is changed every day
+* The target Elasticsearch index where the events are stored to is __changed every day__
 * Configurable path for event timestamp and ID extraction
+* Container status can be monitored via an __HTTP Health Check Endpoint__
 
 ## Extensions
 

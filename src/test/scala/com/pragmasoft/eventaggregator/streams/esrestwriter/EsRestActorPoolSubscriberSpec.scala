@@ -6,6 +6,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import akka.actor.ActorSystem
 import akka.stream.actor.ActorSubscriber
 import akka.testkit.TestKit
+import com.pragmasoft.eventaggregator.GenericRecordEventJsonConverter.EventHeaderDescriptor
 import com.pragmasoft.eventaggregator.model.{EventKafkaLocation, KafkaAvroEvent}
 import com.pragmasoft.eventaggregator.support.{EventHeader, SpecificRecordEventFixture}
 import com.typesafe.scalalogging.LazyLogging
@@ -40,7 +41,7 @@ class EsRestActorPoolSubscriberSpec
       val mockJestClient = mock[JestClient]
       when(jestClientFactory.getObject).thenReturn(mockJestClient)
 
-      val esRestActorPoolSubscriber = system.actorOf(EsRestActorPoolSubscriber.props(1, 1, () => "esIndex", jestClientFactory))
+      val esRestActorPoolSubscriber = system.actorOf(EsRestActorPoolSubscriber.props(1, 1, () => "esIndex", jestClientFactory, EventHeaderDescriptor(Some("id"), Some("eventTs"))))
 
       val actorSubscriber = ActorSubscriber[KafkaAvroEvent[EventHeader]](esRestActorPoolSubscriber)
       actorSubscriber.onNext(KafkaAvroEvent(EventKafkaLocation("topic", 2, 100l), randomIdNoCorrelation))
@@ -92,7 +93,8 @@ class EsRestActorPoolSubscriberSpec
             maxQueueSize = 4,
             elasticSearchIndex = () => "esIndex",
             jestClientFactory = jestClientFactory,
-            subscriptionRequestBatchSize =  1
+            subscriptionRequestBatchSize =  1,
+            headerDescriptor = EventHeaderDescriptor(Some("id"), Some("eventTs"))
           )
         )
 
@@ -151,7 +153,8 @@ class EsRestActorPoolSubscriberSpec
           elasticSearchIndex = () => "esIndex",
           jestClientFactory = jestClientFactory,
           subscriptionRequestBatchSize =  1,
-          maxFailures = 1
+          maxFailures = 1,
+          headerDescriptor = EventHeaderDescriptor(Some("id"), Some("eventTs"))
         )
       )
 
@@ -219,7 +222,8 @@ class EsRestActorPoolSubscriberSpec
           jestClientFactory = jestClientFactory,
           subscriptionRequestBatchSize =  1,
           maxFailures = 1,
-          callTimeout = 200.milliseconds
+          callTimeout = 200.milliseconds,
+          headerDescriptor = EventHeaderDescriptor(Some("id"), Some("eventTs"))
         )
       )
 

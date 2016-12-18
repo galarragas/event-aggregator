@@ -10,6 +10,14 @@ import org.elasticsearch.common.joda.time.format.ISODateTimeFormat
 
 object GenericRecordEventJsonConverter {
 
+  case class EventHeaderDescriptor(eventIdPath: Option[String], eventTsPath: Option[String]) {
+    import com.pragmasoft.eventaggregator.GenericRecordFieldExtractionSupport._
+
+    def extractEventId[T <: GenericRecord](event: T): Option[String] = eventTsPath.flatMap(event.getField[Any]).map(_.toString)
+
+    def extractEventTs[T <: GenericRecord](event: T): Option[Long] = eventTsPath.flatMap(event.getField[Long])
+  }
+
   private def asJsonString(event: GenericRecord): String = {
     val out = new ByteArrayOutputStream()
     val jsonEncoder = EncoderFactory.get().jsonEncoder(event.getSchema, out)
@@ -22,15 +30,13 @@ object GenericRecordEventJsonConverter {
     out.toString
   }
 
-  implicit object kafkaAvroEventIndexable extends Indexable[KafkaAvroEvent[GenericRecord]] {
+  implicit def kafkaAvroEventIndexable(implicit headerDescriptor: EventHeaderDescriptor): Indexable[KafkaAvroEvent[GenericRecord]] = new Indexable[KafkaAvroEvent[GenericRecord]] {
     val timestampFormat = ISODateTimeFormat.dateTime().withZoneUTC
 
     override def json(event: KafkaAvroEvent[GenericRecord]): String = {
-      val timestampJsonAttributeMaybe = for {
-        field <- Option(event.data.getSchema.getField("header"))  //this is to prevent a nastly NPE when accessing the field as the second line does
-        header <- Option(event.data.get("header")).map(_.asInstanceOf[GenericRecord])
-        ts <- Option(header.get("occurredOn")).map(_.asInstanceOf[Long])
-      } yield s""" "@timestamp" : "${timestampFormat.print(ts)}","""
+      val timestampJsonAttributeMaybe =
+        headerDescriptor.extractEventTs(event.data)
+          .map(ts => s""" "@timestamp" : "${timestampFormat.print(ts)}",""")
 
       s"""{
           |  ${timestampJsonAttributeMaybe.getOrElse("")}

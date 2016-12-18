@@ -23,7 +23,7 @@ object GenericRecordFieldExtractionSupport {
         fieldContainerPath = pathNodes.take(pathNodes.length - 1)
 
         fieldContainer <- fieldContainerPath.foldLeft(Option(self)) { case (currRecord, propertyName) =>
-          Option(propertyName).map(_.asInstanceOf[GenericRecord])
+          currRecord.flatMap(record => Option(record.get(propertyName))).map(_.asInstanceOf[GenericRecord])
         }
 
         field <- Option(fieldContainer.get(pathNodes.last))

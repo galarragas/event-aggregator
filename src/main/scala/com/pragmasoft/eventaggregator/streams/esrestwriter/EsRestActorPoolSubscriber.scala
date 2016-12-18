@@ -7,6 +7,7 @@ import akka.routing.RoundRobinPool
 import akka.stream.actor.ActorSubscriberMessage.{OnComplete, OnError, OnNext}
 import akka.stream.actor.{ActorSubscriber, MaxInFlightRequestStrategy, RequestStrategy}
 import akka.util.Timeout
+import com.pragmasoft.eventaggregator.GenericRecordEventJsonConverter.EventHeaderDescriptor
 import com.pragmasoft.eventaggregator.model.KafkaAvroEvent
 import com.pragmasoft.eventaggregator.streams.esrestwriter.EsRestWriterActor.{Write, WriteResult}
 import io.searchbox.client.JestClientFactory
@@ -21,20 +22,22 @@ object EsRestActorPoolSubscriber {
              maxQueueSize: Int,
              elasticSearchIndex: () => String,
              jestClientFactory: JestClientFactory,
+             headerDescriptor: EventHeaderDescriptor,
              maxFailures: Int = 5,
              callTimeout: Timeout = 30.seconds,
              resetTimeout: Timeout = 1.minute,
              subscriptionRequestBatchSize: Int = 5
            ): Props =
-    Props(new EsRestActorPoolSubscriber(numberOfWorkers, maxQueueSize, elasticSearchIndex, jestClientFactory, maxFailures, callTimeout, resetTimeout, subscriptionRequestBatchSize))
+    Props(new EsRestActorPoolSubscriber(numberOfWorkers, maxQueueSize, elasticSearchIndex, jestClientFactory, maxFailures, callTimeout, resetTimeout, subscriptionRequestBatchSize, headerDescriptor))
 
   def props(
              numberOfWorkers: Int,
              maxQueueSize: Int,
              elasticSearchIndex: () => String,
-             esConnectionUrl: String
+             esConnectionUrl: String,
+             headerDescriptor: EventHeaderDescriptor
            ): Props = {
-    props(numberOfWorkers, maxQueueSize, elasticSearchIndex, jestClientFactory(esConnectionUrl))
+    props(numberOfWorkers, maxQueueSize, elasticSearchIndex, jestClientFactory(esConnectionUrl), headerDescriptor)
   }
 
   private [EsRestActorPoolSubscriber] def jestClientFactory(esConnectionUrl: String): JestClientFactory = {
@@ -56,7 +59,8 @@ class EsRestActorPoolSubscriber(
                                  maxFailures: Int,
                                  callTimeout: Timeout,
                                  resetTimeout: Timeout,
-                                 subscriptionRequestBatchSize: Int
+                                 subscriptionRequestBatchSize: Int,
+                                 headerDescriptor: EventHeaderDescriptor
                                )  extends ActorSubscriber with ActorLogging {
 
   log.info("Initializing EsRestActorPoolSubscriber")
@@ -97,7 +101,7 @@ class EsRestActorPoolSubscriber(
       RoundRobinPool(numberOfWorkers)
         .props(
           EsRestWriterActor
-            .props(jestClientFactory, elasticSearchIndex)
+            .props(jestClientFactory, elasticSearchIndex, headerDescriptor)
             .withDispatcher("elasticsearch.writer-dispatcher")
         )
     )

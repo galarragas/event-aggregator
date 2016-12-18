@@ -4,6 +4,7 @@ import akka.NotUsed
 import akka.stream.actor.ActorSubscriber
 import akka.stream.scaladsl.Sink
 import com.pragmasoft.eventaggregator.ActorSystemProvider
+import com.pragmasoft.eventaggregator.GenericRecordEventJsonConverter.{EventHeaderDescriptor, kafkaAvroEventIndexable}
 import com.pragmasoft.eventaggregator.model.KafkaAvroEvent
 import com.pragmasoft.eventaggregator.streams.esrestwriter.EsRestActorPoolSubscriber
 import com.sksamuel.elastic4s.streams.ReactiveElastic.ReactiveElastic
@@ -27,19 +28,15 @@ trait ElasticsearchEventSinkProvider extends SinkProvider[KafkaAvroEvent[Generic
   def batchSize: Int = 100
   def concurrentRequests: Int = 5
   def flushInterval: FiniteDuration = 10.seconds
+  implicit def eventHeaderDescriptor: EventHeaderDescriptor
 
   implicit val builder = new RequestBuilder[KafkaAvroEvent[GenericRecord]] {
     import ElasticDsl._
-    import com.pragmasoft.eventaggregator.GenericRecordEventJsonConverter._
 
     def request(event: KafkaAvroEvent[GenericRecord]): BulkCompatibleDefinition = {
       val documentType = event.schemaName
 
-      val maybeId = for {
-        field <- Option(event.data.getSchema.getField("header"))  //this is to prevent a nastly NPE when accessing the field as the second line does
-        header <- Option(event.data.get("header")).map(_.asInstanceOf[GenericRecord])
-        id <- Option(header.get("eventId").toString)
-      } yield id.toString
+      val maybeId = eventHeaderDescriptor.extractEventId(event.data)
 
       logger.debug("Indexing document {} into: '{}/{}' with ID {}", event, elasticSearchIndex, documentType, maybeId)
 
@@ -78,10 +75,12 @@ trait RestElasticsearchEventSinkProvider extends SinkProvider[KafkaAvroEvent[Gen
 
   def calculateIndexName = () => elasticSearchIndex
 
+  def  headerDescriptor: EventHeaderDescriptor
+
   override lazy val sink: Sink[KafkaAvroEvent[GenericRecord], NotUsed] =
     Sink.fromSubscriber(
       ActorSubscriber[KafkaAvroEvent[GenericRecord]](
-        actorSystem.actorOf(EsRestActorPoolSubscriber.props(10, 15, calculateIndexName, elasticSearchConnectionUrl))
+        actorSystem.actorOf(EsRestActorPoolSubscriber.props(10, 15, calculateIndexName, elasticSearchConnectionUrl, headerDescriptor))
       )
     )
 }

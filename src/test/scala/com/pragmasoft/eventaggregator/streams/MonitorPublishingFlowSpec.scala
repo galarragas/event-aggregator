@@ -54,7 +54,7 @@ class MonitorPublishingFlowSpec extends WordSpec with Matchers with WithActorSys
 
     "drop invalid events and progress with valid ones" in withActorSystem { actorSystem =>
 
-      val invalidKafkaMessage = aConsumerRecord(value = eventEncoder.toBytes("Invalid message".getBytes))
+      val invalidKafkaMessage = aConsumerRecord(value = "Invalid message".getBytes)
 
       val validKafkaMessage = aConsumerRecord(value = eventEncoder.toBytes(aProfileCreatedEvent))
 

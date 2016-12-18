@@ -20,10 +20,7 @@ public class ProfileCreated extends org.apache.avro.specific.SpecificRecordBase 
                                 "{\"name\":\"userId\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}}," +
                                 "{\"name\":\"firstName\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}}," +
                                 "{\"name\":\"lastName\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}}," +
-                                "{\"name\":\"username\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}}," +
-                                "{\"name\":\"avatarUrl\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":null}," +
-                                "{\"name\":\"fullName\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"default\":\"\"}," +
-                                "{\"name\":\"gender\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":null}" +
+                                "{\"name\":\"username\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}}" +
                             "]}");
 
   public static org.apache.avro.Schema getClassSchema() { return SCHEMA$; }

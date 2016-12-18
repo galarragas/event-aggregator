@@ -1,6 +1,6 @@
 package com.pragmasoft.eventaggregator
 
-import com.pragmasoft.eventaggregator.GenericRecordEventJsonConverter.kafkaAvroEventIndexable
+import com.pragmasoft.eventaggregator.GenericRecordEventJsonConverter.{EventHeaderDescriptor, kafkaAvroEventIndexable}
 import com.pragmasoft.eventaggregator.model.{EventKafkaLocation, KafkaAvroEvent}
 import com.pragmasoft.eventaggregator.support.{ProfileCreated, SpecificRecordEventFixture}
 import org.elasticsearch.common.joda.time.{DateTime, DateTimeZone}
@@ -15,7 +15,7 @@ class GenericRecordEventJsonConverterSpec extends WordSpec with Matchers with Sp
   "GenericRecordEventJsonConverter" should {
     "convert a MonitoredEvent to a JSON structure containing the sent message location info " in {
 
-      val jsonStringEvent = kafkaAvroEventIndexable.json(KafkaAvroEvent(EventKafkaLocation("topic", 2, 100l), randomIdNoCorrelation))
+      val jsonStringEvent = kafkaAvroEventIndexable(EventHeaderDescriptor(Some("id"), Some("eventTs"))).json(KafkaAvroEvent(EventKafkaLocation("topic", 2, 100l), randomIdNoCorrelation))
 
       val messageLocation = parse(jsonStringEvent) \ "location"
 
@@ -27,7 +27,7 @@ class GenericRecordEventJsonConverterSpec extends WordSpec with Matchers with Sp
     "convert a MonitoredEvent to a JSON structure containing the schema name of the event" in {
 
       val event = randomIdNoCorrelation
-      val jsonStringEvent = kafkaAvroEventIndexable.json(KafkaAvroEvent(EventKafkaLocation("topic", 2, 100l), event))
+      val jsonStringEvent = kafkaAvroEventIndexable(EventHeaderDescriptor(Some("id"), Some("eventTs"))).json(KafkaAvroEvent(EventKafkaLocation("topic", 2, 100l), event))
 
       (parse(jsonStringEvent) \ "schemaName").extract[String] should be(event.getSchema.getName)
     }
@@ -35,7 +35,7 @@ class GenericRecordEventJsonConverterSpec extends WordSpec with Matchers with Sp
     "convert a MonitoredEvent with a binary encoded avro event to a JSON structure containing the AVRO Json representation of the event" in {
 
       val event = newEventHeader("event-id", Some("request-id"), 1000l)
-      val jsonStringEvent = kafkaAvroEventIndexable.json(KafkaAvroEvent(EventKafkaLocation("topic", 2, 100l), event))
+      val jsonStringEvent = kafkaAvroEventIndexable(EventHeaderDescriptor(Some("id"), Some("eventTs"))).json(KafkaAvroEvent(EventKafkaLocation("topic", 2, 100l), event))
 
       parse(jsonStringEvent) \ "data" should be(parse("""{ "id" : "event-id", "correlationId": { "string" : "request-id" }, "eventTs": 1000 }"""))
     }
@@ -49,7 +49,7 @@ class GenericRecordEventJsonConverterSpec extends WordSpec with Matchers with Sp
 
       val header =  newEventHeader("event-id", Some("request-id"), occurredOn.getMillis)
       val event = new ProfileCreated(header, "userId", "firstName", "lastName", "userName")
-      val jsonStringEvent = kafkaAvroEventIndexable.json(KafkaAvroEvent(EventKafkaLocation("topic", 2, 100l), event))
+      val jsonStringEvent = kafkaAvroEventIndexable(EventHeaderDescriptor(Some("header/id"), Some("header/eventTs"))).json(KafkaAvroEvent(EventKafkaLocation("topic", 2, 100l), event))
 
       // Cannot do "2016-01-15T18:18:56.831+00:00"
       (parse(jsonStringEvent) \ "@timestamp").extract[String] should be ("2016-01-15T18:18:56.831Z")
@@ -57,7 +57,7 @@ class GenericRecordEventJsonConverterSpec extends WordSpec with Matchers with Sp
 
     "NOT write a @timestamp JSON field if the structure has no 'header.eventTs' property" in {
       val event = newEventHeader("event-id", Some("request-id"), 1000)
-      val jsonStringEvent = kafkaAvroEventIndexable.json(KafkaAvroEvent(EventKafkaLocation("topic", 2, 100l), event))
+      val jsonStringEvent = kafkaAvroEventIndexable(EventHeaderDescriptor(Some("id"), Some("eventTs"))).json(KafkaAvroEvent(EventKafkaLocation("topic", 2, 100l), event))
 
       parse(jsonStringEvent) \ "@timestamp" should be (JNothing)
     }

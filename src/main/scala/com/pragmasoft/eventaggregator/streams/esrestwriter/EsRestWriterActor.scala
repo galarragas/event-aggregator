@@ -2,7 +2,7 @@ package com.pragmasoft.eventaggregator.streams.esrestwriter
 
 import akka.actor.{Actor, ActorLogging, Props}
 import akka.event.LoggingReceive
-import com.pragmasoft.eventaggregator.GenericRecordEventJsonConverter.kafkaAvroEventIndexable
+import com.pragmasoft.eventaggregator.GenericRecordEventJsonConverter._
 import com.pragmasoft.eventaggregator.model.KafkaAvroEvent
 import io.searchbox.client.{JestClientFactory, JestResultHandler}
 import io.searchbox.core.{DocumentResult, Index}
@@ -13,24 +13,21 @@ object EsRestWriterActor {
   case class Write[T <: GenericRecord](event: KafkaAvroEvent[T])
   case class WriteResult[T <: GenericRecord](event: KafkaAvroEvent[T], succeeded: Boolean)
 
-  def props(factory: JestClientFactory, elasticSearchIndex: () => String) = Props(new EsRestWriterActor(factory, elasticSearchIndex))
+  def props(factory: JestClientFactory, elasticSearchIndex: () => String, headerDescriptor: EventHeaderDescriptor): Props =
+    Props(new EsRestWriterActor(factory, elasticSearchIndex, headerDescriptor))
 
   case class EsDocumentInfo(documentType: String, maybeDocumentId: Option[String], source: String)
 
-  def extractDocumentIndexingInfo(event: KafkaAvroEvent[GenericRecord]): EsDocumentInfo = {
+  def extractDocumentIndexingInfo(event: KafkaAvroEvent[GenericRecord])(implicit eventHeaderDescriptor: EventHeaderDescriptor): EsDocumentInfo = {
     val documentType = event.schemaName
 
-    val maybeId = for {
-      field <- Option(event.data.getSchema.getField("header"))  //this is to prevent a nastly NPE when accessing the field as the second line does
-      header <- Option(event.data.get("header")).map(_.asInstanceOf[GenericRecord])
-      id <- Option(header.get("eventId").toString)
-    } yield id.toString
+    val maybeId = eventHeaderDescriptor.extractEventId(event.data)
 
     EsDocumentInfo(documentType, maybeId, kafkaAvroEventIndexable.json(event))
   }
 }
 
-class EsRestWriterActor(factory: JestClientFactory, val elasticSearchIndex: () => String) extends Actor with ActorLogging {
+class EsRestWriterActor(factory: JestClientFactory, val elasticSearchIndex: () => String, headerDescriptor: EventHeaderDescriptor) extends Actor with ActorLogging {
   import EsRestWriterActor._
 
   log.info("EsRestWriterActor: Initializing, creating ES REST Client")
@@ -40,7 +37,7 @@ class EsRestWriterActor(factory: JestClientFactory, val elasticSearchIndex: () =
   override def receive: Receive = LoggingReceive {
     case Write(event@KafkaAvroEvent(location, data)) =>
       log.debug("Asked to write to ES a new monitored event {}", event)
-      val documentInfo = extractDocumentIndexingInfo(event)
+      val documentInfo = extractDocumentIndexingInfo(event)(headerDescriptor)
 
       val esIndex = elasticSearchIndex()
       val indexWithoutId = new Index.Builder(documentInfo.source).`type`(documentInfo.documentType).index(esIndex)
