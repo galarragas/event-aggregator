@@ -4,30 +4,45 @@ import akka.actor.ActorSystem
 import com.pragmasoft.eventaggregator.GenericRecordEventJsonConverter.EventHeaderDescriptor
 import com.pragmasoft.eventaggregator.http.HttpServer
 import com.pragmasoft.eventaggregator.streams.{KafkaPublisherConfig, KafkaToNativeElasticsearchAggregatorFLow, KafkaToRestElasticsearchAggregatorFLow}
+import com.sksamuel.elastic4s.ElasticClient
 import com.typesafe.config.{Config, ConfigFactory}
 import com.typesafe.scalalogging.LazyLogging
 import io.confluent.kafka.schemaregistry.client.{CachedSchemaRegistryClient, SchemaRegistryClient}
+import org.apache.commons.lang3.RandomStringUtils.randomAlphabetic
 import org.elasticsearch.common.settings.ImmutableSettings
 
-case class
-case class EventAggregatorArgs(
-                                kafkaBootstrapBrokers: String = "",
-                                readFromBeginning: Boolean = false,
-                                topicRegex: String = ".+",
 
+case class KafkaConfig(kafkaBootstrapBrokers: String = "",
+                       consumerGroup: String = randomAlphabetic(10),
+                       readFromBeginning: Boolean = false,
+                       topicRegex: String = ".+",
+                       schemaRegistryUrl: String = ""
+                      )
+
+case class EsConfig(esHost: String = "",
+                    esPort: Int = 9300,
+                    useHttp: Boolean = false)
+
+case class EventsSyntaxConfig(eventIdPath: String = "header/eventId",
+                              eventTsPath: String = "header/timestamp")
+
+case class EventAggregatorArgs(
+                                kafkaConfig: KafkaConfig = KafkaConfig(),
+                                esConfig: EsConfig = EsConfig(),
+                                eventsSyntaxConfig: EventsSyntaxConfig = EventsSyntaxConfig()
                               )
 
 object EventAggregatorArgs {
-  def withDefaultsFromConfig(config: Config): EventAggregatorArgs
+  def withDefaultsFromConfig(config: Config): EventAggregatorArgs = EventAggregatorArgs()
 }
 
-class EventAggregator(config: Config, schemaRegistry: SchemaRegistryClient) extends LazyLogging {
+class EventAggregator(args: EventAggregatorArgs, config: Config, schemaRegistry: SchemaRegistryClient) extends LazyLogging {
   val kafkaConfig = KafkaPublisherConfig(
     reactiveKafkaDispatcher = config.getString("kafka.actor_dispatcher_name"),
-    bootstrapBrokers = config.getString("kafka.bootstrap_broker_list"),
-    topicRegex = config.getString("kafka.topics_regex"),
-    groupId = config.getString("kafka.consumer_group"),
-    readFromBeginning = config.getBoolean("kafka.read_from_beginning")
+    bootstrapBrokers = args.kafkaConfig.kafkaBootstrapBrokers,
+    topicRegex = args.kafkaConfig.topicRegex,
+    groupId = args.kafkaConfig.consumerGroup,
+    readFromBeginning = args.kafkaConfig.readFromBeginning
   )
 
   def run() {
@@ -42,24 +57,33 @@ class EventAggregator(config: Config, schemaRegistry: SchemaRegistryClient) exte
     val esPort = config.getInt("elasticsearch.port")
     val esConnectionUrl = s"http://$esHost:$esPort"
 
-    val eventIdPath = "header/eventId"
-    val eventTsPath = "header/timestamp"
-
     val esIndexPrefix = config.getString("elasticsearch.indexPrefix")
     implicit val actorSystem = ActorSystem("KafkaEventMonitorApp")
-    val eventMonitorPublisher = new KafkaToRestElasticsearchAggregatorFLow(
-      kafkaConfig,
-      esIndexPrefix,
-      esConnectionUrl,
-      actorSystem,
-      schemaRegistry,
-      EventHeaderDescriptor(Some(eventIdPath), Some(eventIdPath))
-    )
+    val aggregator =
+      if(args.esConfig.useHttp) {
+        new KafkaToNativeElasticsearchAggregatorFLow(
+          kafkaConfig,
+          esIndexPrefix,
+          actorSystem,
+          schemaRegistry,
+          EventHeaderDescriptor(Some(args.eventsSyntaxConfig.eventIdPath), Some(args.eventsSyntaxConfig.eventIdPath)),
+          ElasticClient.remote(args.esConfig.esHost, args.esConfig.esPort)
+        )
+      } else {
+        new KafkaToRestElasticsearchAggregatorFLow(
+          kafkaConfig,
+          esIndexPrefix,
+          esConnectionUrl,
+          actorSystem,
+          schemaRegistry,
+          EventHeaderDescriptor(Some(args.eventsSyntaxConfig.eventIdPath), Some(args.eventsSyntaxConfig.eventIdPath))
+        )
+    }
 
     logger.info(s"KafkaEventMonitorApp starting, connecting to es at '$esConnectionUrl' with index prefix $esIndexPrefix")
 
     new HttpServer(config).start()
-    eventMonitorPublisher.startFlow()
+    aggregator.startFlow()
 
     logger.info("KafkaEventMonitorApp started")
 
@@ -71,8 +95,11 @@ class EventAggregator(config: Config, schemaRegistry: SchemaRegistryClient) exte
   }
 }
 
-object KafkaEventMonitorApp extends App {
-  val appInstance = new EventAggregator(ConfigFactory.load(), new CachedSchemaRegistryClient())
+object EventAggregatorApp extends App {
+  private val config = ConfigFactory.load()
+
+  val cmdLineArgs = EventAggregatorArgs.withDefaultsFromConfig(config)
+  val appInstance = new EventAggregator(cmdLineArgs, config, new CachedSchemaRegistryClient(cmdLineArgs.kafkaConfig.schemaRegistryUrl, 100))
 
   appInstance.run()
 

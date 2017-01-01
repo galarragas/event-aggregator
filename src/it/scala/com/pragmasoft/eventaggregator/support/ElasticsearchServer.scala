@@ -3,6 +3,7 @@ package com.pragmasoft.eventaggregator.support
 import java.net.ServerSocket
 import java.nio.file.Files
 
+import org.apache.commons.io.FileUtils
 import org.elasticsearch.client.Client
 import org.elasticsearch.common.settings.ImmutableSettings
 import org.elasticsearch.node.NodeBuilder._

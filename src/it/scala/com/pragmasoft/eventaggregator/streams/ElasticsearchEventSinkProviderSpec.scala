@@ -4,6 +4,7 @@ import akka.actor.ActorSystem
 import akka.stream.scaladsl.Source
 import akka.stream.{ActorMaterializer, ActorMaterializerSettings}
 import com.pragmasoft.eventaggregator.ActorSystemProvider
+import com.pragmasoft.eventaggregator.GenericRecordEventJsonConverter.EventHeaderDescriptor
 import com.pragmasoft.eventaggregator.model.{EventKafkaLocation, KafkaAvroEvent}
 import com.pragmasoft.eventaggregator.support.{ElasticsearchContainer, IntegrationEventsFixture, WithActorSystemIT}
 import com.sksamuel.elastic4s.ElasticClient
@@ -31,7 +32,11 @@ class ElasticsearchEventSinkProviderSpec
   "ElasticsearchEventSink" should {
     "Write events in elastic search with document type equal to the schema name using the event ID from header if available" in withActorSystem { actorSystem =>
       val event = aProfileCreatedEvent
-      val testFlow = new TestFlow(Seq(KafkaAvroEvent(EventKafkaLocation("topic", 1, 100l), event)), actorSystem)
+      val testFlow = new TestFlow(
+        Seq(KafkaAvroEvent(EventKafkaLocation("topic", 1, 100l), event)),
+        actorSystem,
+        EventHeaderDescriptor(Some("header/id"), Some("header/eventTs"))
+      )
 
       testFlow.runFlow()
 
@@ -50,7 +55,11 @@ class ElasticsearchEventSinkProviderSpec
 
     "Write events in elastic search with document type equal to the schema name using a generated ID if the event has no field 'header' of type EventHeader" in withActorSystem { actorSystem =>
       val event = randomIdNoCorrelation
-      val testFlow = new TestFlow(Seq(KafkaAvroEvent(EventKafkaLocation("topic", 1, 100l), event)), actorSystem)
+      val testFlow = new TestFlow(
+        Seq(KafkaAvroEvent(EventKafkaLocation("topic", 1, 100l), event)),
+        actorSystem,
+        EventHeaderDescriptor(Some("header/id"), Some("header/eventTs"))
+      )
 
       testFlow.runFlow()
 
@@ -70,7 +79,7 @@ class ElasticsearchEventSinkProviderSpec
   }
 
 
-  class TestFlow(events: Seq[KafkaAvroEvent[GenericRecord]], override val actorSystem: ActorSystem)
+  class TestFlow(events: Seq[KafkaAvroEvent[GenericRecord]], override val actorSystem: ActorSystem, override val headerDescriptor: EventHeaderDescriptor)
     extends ElasticsearchEventSinkProvider
       with ElasticSearchIndexNameProvider
       with ActorSystemProvider

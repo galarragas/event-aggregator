@@ -64,6 +64,7 @@ val logback = Seq(
   "ch.qos.logback" % "logback-classic" % logbackVersion
 )
 
+val apacheCommonsIo = Seq("commons-io" % "commons-io" % "2.5")
 
 val kafkaStreams = Seq(
   ("com.typesafe.akka" %% "akka-stream-kafka" % akkaStreamKafkaVersion).excludeAll(
@@ -112,7 +113,8 @@ parallelExecution in IntegrationTest := false
 val httpMetaEndpointLibraries = akkaHttp ++ json4s
 
 libraryDependencies ++= scopt ++ testCore ++ logback ++ logging ++ avro ++ kafka ++ elastic4s ++
-  jsonParser ++ kafkaStreams ++ confluentKafkaLibs ++ httpMetaEndpointLibraries ++ jest ++ embeddedKafka ++ akkaHttpJson
+  jsonParser ++ kafkaStreams ++ confluentKafkaLibs ++ httpMetaEndpointLibraries ++
+  jest ++ embeddedKafka ++ akkaHttpJson ++ apacheCommonsIo.map( _ % "it")
 
 dependencyOverrides ++= Set(
   "com.fasterxml.jackson.core" % "jackson-databind" % "2.4.4"
