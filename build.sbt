@@ -145,7 +145,7 @@ parallelExecution in IntegrationTest := false
 
 Defaults.itSettings
 
-lazy val kafkaEventMonitor = project.in(file("."))
+lazy val eventAggregator = project.in(file("."))
   .configs(IntegrationTest)
   .settings(
     releaseVersionBump := Next,

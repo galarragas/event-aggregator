@@ -55,9 +55,9 @@ class GenericRecordEventJsonConverterSpec extends WordSpec with Matchers with Sp
       (parse(jsonStringEvent) \ "@timestamp").extract[String] should be ("2016-01-15T18:18:56.831Z")
     }
 
-    "NOT write a @timestamp JSON field if the structure has no 'header.eventTs' property" in {
+    "NOT write a @timestamp JSON field if the structure has no timestamp property property" in {
       val event = newEventHeader("event-id", Some("request-id"), 1000)
-      val jsonStringEvent = kafkaAvroEventIndexable(EventHeaderDescriptor(Some("id"), Some("eventTs"))).json(KafkaAvroEvent(EventKafkaLocation("topic", 2, 100l), event))
+      val jsonStringEvent = kafkaAvroEventIndexable(EventHeaderDescriptor(Some("id"), Some("differentEventTs"))).json(KafkaAvroEvent(EventKafkaLocation("topic", 2, 100l), event))
 
       parse(jsonStringEvent) \ "@timestamp" should be (JNothing)
     }

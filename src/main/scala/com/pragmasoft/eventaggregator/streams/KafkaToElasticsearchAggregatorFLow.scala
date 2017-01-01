@@ -4,10 +4,11 @@ import akka.NotUsed
 import akka.actor.ActorSystem
 import com.pragmasoft.eventaggregator.ActorSystemProvider
 import com.pragmasoft.eventaggregator.GenericRecordEventJsonConverter.EventHeaderDescriptor
+import com.sksamuel.elastic4s.ElasticClient
 import com.typesafe.scalalogging.LazyLogging
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient
 
-class KafkaToElasticsearchMonitorPublishingFLow(
+class KafkaToRestElasticsearchAggregatorFLow(
     override val kafkaConfig: KafkaPublisherConfig,
     override val elasticSearchIndexPrefix: String,
     override val elasticSearchConnectionUrl: String,
@@ -21,4 +22,21 @@ class KafkaToElasticsearchMonitorPublishingFLow(
   with ActorSystemProvider
   with DayPartitionedElasticSearchIndexNameProvider
   with LazyLogging {
+}
+
+
+class KafkaToNativeElasticsearchAggregatorFLow(
+     override val kafkaConfig: KafkaPublisherConfig,
+     override val elasticSearchIndexPrefix: String,
+     override implicit val actorSystem: ActorSystem,
+     override val schemaRegistry: SchemaRegistryClient,
+     override val headerDescriptor: EventHeaderDescriptor,
+     override val elasticSearchClient: ElasticClient
+   )
+  extends MonitorPublishingFlow[NotUsed]
+    with KafkaSourceProvider
+    with ElasticsearchEventSinkProvider
+    with ActorSystemProvider
+    with DayPartitionedElasticSearchIndexNameProvider
+    with LazyLogging {
 }

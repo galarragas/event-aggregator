@@ -28,7 +28,8 @@ trait ElasticsearchEventSinkProvider extends SinkProvider[KafkaAvroEvent[Generic
   def batchSize: Int = 100
   def concurrentRequests: Int = 5
   def flushInterval: FiniteDuration = 10.seconds
-  implicit def eventHeaderDescriptor: EventHeaderDescriptor
+
+  implicit def headerDescriptor: EventHeaderDescriptor
 
   implicit val builder = new RequestBuilder[KafkaAvroEvent[GenericRecord]] {
     import ElasticDsl._
@@ -36,7 +37,7 @@ trait ElasticsearchEventSinkProvider extends SinkProvider[KafkaAvroEvent[Generic
     def request(event: KafkaAvroEvent[GenericRecord]): BulkCompatibleDefinition = {
       val documentType = event.schemaName
 
-      val maybeId = eventHeaderDescriptor.extractEventId(event.data)
+      val maybeId = headerDescriptor.extractEventId(event.data)
 
       logger.debug("Indexing document {} into: '{}/{}' with ID {}", event, elasticSearchIndex, documentType, maybeId)
 
