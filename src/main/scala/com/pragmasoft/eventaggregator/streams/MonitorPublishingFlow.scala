@@ -1,7 +1,7 @@
 package com.pragmasoft.eventaggregator.streams
 
-import akka.NotUsed
-import akka.stream.{ActorMaterializer, ActorMaterializerSettings}
+import akka.event.Logging
+import akka.stream.{ActorMaterializer, ActorMaterializerSettings, Attributes}
 import com.pragmasoft.eventaggregator.ActorSystemProvider
 import com.pragmasoft.eventaggregator.model.KafkaAvroEvent
 import com.typesafe.scalalogging.LazyLogging
@@ -18,7 +18,7 @@ trait MonitorPublishingFlow[Materializer] extends KafkaMessageParsingSupport wit
   implicit val materializer = ActorMaterializer(ActorMaterializerSettings(actorSystem).withSupervisionStrategy(alwaysResume("Error trying to save topics content into elastic search")))
 
   def startFlow(): Materializer = {
-    source
+    source.log("received-message").withAttributes(Attributes.logLevels(onElement = Logging.DebugLevel))
       .via(parseKafkaMessage)
       .via(filterAndLogFailures[KafkaAvroEvent[GenericRecord]]("Unable to deserialize message, dropping it"))
     .runWith(sink)

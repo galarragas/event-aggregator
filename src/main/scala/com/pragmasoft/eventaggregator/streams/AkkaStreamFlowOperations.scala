@@ -22,6 +22,8 @@ trait AkkaStreamFlowOperations {
       identity(x)
     case x =>
       identity(x)
-  }.collect { case Success(successfulValue) => successfulValue }
+  }
+    .collect { case Success(successfulValue) => successfulValue }
+    .named("FilterAndLogFailures")
 
 }

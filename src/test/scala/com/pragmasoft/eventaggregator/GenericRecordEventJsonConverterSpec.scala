@@ -12,7 +12,7 @@ class GenericRecordEventJsonConverterSpec extends WordSpec with Matchers with Sp
 
   implicit val formats = DefaultFormats
 
-  "GenericRecordEventJsonConverter" should {
+  "kafkaAvroEventIndexable" should {
     "convert a MonitoredEvent to a JSON structure containing the sent message location info " in {
 
       val jsonStringEvent = kafkaAvroEventIndexable(EventHeaderDescriptor(Some("id"), Some("eventTs"))).json(KafkaAvroEvent(EventKafkaLocation("topic", 2, 100l), randomIdNoCorrelation))
@@ -60,6 +60,45 @@ class GenericRecordEventJsonConverterSpec extends WordSpec with Matchers with Sp
       val jsonStringEvent = kafkaAvroEventIndexable(EventHeaderDescriptor(Some("id"), Some("differentEventTs"))).json(KafkaAvroEvent(EventKafkaLocation("topic", 2, 100l), event))
 
       parse(jsonStringEvent) \ "@timestamp" should be (JNothing)
+    }
+  }
+
+  "EventHeaderDescriptor" should {
+
+    "extract the event ID from the header of a generic record subclass if present" in {
+      val header =  newEventHeader("event-id", Some("request-id"), 1000l)
+      val event = new ProfileCreated(header, "userId", "firstName", "lastName", "userName")
+      EventHeaderDescriptor(Some("header/id"), Some("header/eventTs")).extractEventId(event) shouldBe Some("event-id")
+    }
+
+    "extract NO event ID from the header of a generic record subclass if not present" in {
+      val header =  newEventHeader("event-id", Some("request-id"), 1000l)
+      val event = new ProfileCreated(header, "userId", "firstName", "lastName", "userName")
+      EventHeaderDescriptor(Some("header/otherPath"), Some("header/eventTs")).extractEventId(event) shouldBe None
+    }
+
+    "extract NO event ID from the header of a generic record subclass if not given in the description" in {
+      val header =  newEventHeader("event-id", Some("request-id"), 1000l)
+      val event = new ProfileCreated(header, "userId", "firstName", "lastName", "userName")
+      EventHeaderDescriptor(None, Some("header/eventTs")).extractEventId(event) shouldBe None
+    }
+
+    "extract the event TS from the header of a generic record subclass if present" in {
+      val header =  newEventHeader("event-id", Some("request-id"), 1000l)
+      val event = new ProfileCreated(header, "userId", "firstName", "lastName", "userName")
+      EventHeaderDescriptor(Some("header/id"), Some("header/eventTs")).extractEventTs(event) shouldBe Some(1000l)
+    }
+
+    "extract NO event TS from the header of a generic record subclass if not present" in {
+      val header =  newEventHeader("event-id", Some("request-id"), 1000l)
+      val event = new ProfileCreated(header, "userId", "firstName", "lastName", "userName")
+      EventHeaderDescriptor(Some("header/id"), Some("header/otherPath")).extractEventTs(event) shouldBe None
+    }
+
+    "extract NO event TS from the header of a generic record subclass if not given in the description" in {
+      val header =  newEventHeader("event-id", Some("request-id"), 1000l)
+      val event = new ProfileCreated(header, "userId", "firstName", "lastName", "userName")
+      EventHeaderDescriptor(Some("header/id"), None).extractEventTs(event) shouldBe None
     }
   }
 

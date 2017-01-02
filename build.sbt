@@ -132,8 +132,6 @@ dependencyOverrides ++= Set(
 )
 
 scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature")
-javaOptions in Test += "-Dlog.include=/logback-test-included.xml"
-javaOptions in IntegrationTest += "-Dlog.include=/logback-it-included.xml"
 
 resolvers ++= Seq (
   "Sonatype" at "https://oss.sonatype.org/content/groups/public/",

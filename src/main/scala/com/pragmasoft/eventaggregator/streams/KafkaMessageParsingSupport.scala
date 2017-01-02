@@ -27,5 +27,5 @@ trait KafkaMessageParsingSupport {
 
           KafkaAvroEvent(EventKafkaLocation.fromKafkaMessage(kafkaMessage), parsedMessage)
         }
-      }
+      }.named("ParseKafkaMessage")
 }

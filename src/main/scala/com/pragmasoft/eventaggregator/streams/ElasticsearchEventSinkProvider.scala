@@ -52,7 +52,7 @@ trait ElasticsearchEventSinkProvider extends SinkProvider[KafkaAvroEvent[Generic
       concurrentRequests = concurrentRequests,
       flushInterval = Some(flushInterval),
       completionFn = { () => logger.info("Subcriber flow completed") },
-      errorFn = { throwable: Throwable => logger.error("Error during monitoring flow", throwable) },
+      errorFn = { throwable: Throwable => logger.error("Error during event aggregation flow", throwable) },
       listener = new ResponseListener {
         override def onAck(resp: BulkItemResult): Unit = {
           if (resp.isFailure) {
@@ -62,7 +62,7 @@ trait ElasticsearchEventSinkProvider extends SinkProvider[KafkaAvroEvent[Generic
           }
         }
       }
-    ))
+    )).named("ElasticsearchRestWriter")
   }
 
 }
@@ -82,5 +82,5 @@ trait RestElasticsearchEventSinkProvider extends SinkProvider[KafkaAvroEvent[Gen
       ActorSubscriber[KafkaAvroEvent[GenericRecord]](
         actorSystem.actorOf(EsRestActorPoolSubscriber.props(10, 15, calculateIndexName, elasticSearchConnectionUrl, headerDescriptor))
       )
-    )
+    ).named("ElasticsearchProtocolWriter")
 }

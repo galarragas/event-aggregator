@@ -32,6 +32,8 @@ class KafkaToNativeElasticsearchAggregatorFLowIntegrationSpec
 
   val schemaRegistry = new MockSchemaRegistryClient()
 
+  val TestTopic = "testTopic"
+
   "KafkaToElasticsearchMonitorPublishingFLow" should {
 
     "read messages from a kafka topic matching the regex and publish them in ElasticSearch" in withRunningKafka {
@@ -40,8 +42,9 @@ class KafkaToNativeElasticsearchAggregatorFLowIntegrationSpec
         implicit val eventSerializer: Serializer[AnyRef] = new KafkaAvroSerializer(schemaRegistry)
 
         val kafkaConfig = KafkaPublisherConfig(
+          reactiveKafkaDispatcher = "akka.custom.dispatchers.kafka-publisher-dispatcher",
           bootstrapBrokers = s"localhost:${embeddedKafkaConfig.kafkaPort}",
-          topicRegex = "testTopic",
+          topicRegex = TestTopic,
           groupId = "testGroup",
           readFromBeginning = true
         )
@@ -51,14 +54,14 @@ class KafkaToNativeElasticsearchAggregatorFLowIntegrationSpec
           EventsIndexPrefix,
           actorSystem,
           schemaRegistry,
-          EventHeaderDescriptor(Some("header/id"), Some("event/eventTs")),
+          EventHeaderDescriptor(Some("header/id"), Some("header/eventTs")),
           ElasticClient.fromClient(elasticsearchClient)
         )
 
         flow.startFlow()
 
         val event = aProfileCreatedEvent
-        publishToKafka[AnyRef]("testTopic", event)
+        publishToKafka[AnyRef](TestTopic, event)
 
         eventually {
           val eventualGetResponse = ElasticClient.fromClient(elasticsearchClient).execute {
@@ -68,7 +71,9 @@ class KafkaToNativeElasticsearchAggregatorFLowIntegrationSpec
           }
 
           whenReady(eventualGetResponse) { getResponse =>
-            getResponse.isExists should be(true)
+            withClue(s"Expected a document in elasticsearch ${EventsIndex}/${event.getSchema().getName} with ID ${event.getHeader.getId}") {
+              getResponse.isExists should be(true)
+            }
           }(elasticSearchRetrievalPatience, Position.here)
         }(elasticSearchPatience, Position.here)
       }
@@ -80,8 +85,9 @@ class KafkaToNativeElasticsearchAggregatorFLowIntegrationSpec
         implicit val eventSerializer = new KafkaAvroSerializer(schemaRegistry)
 
         val kafkaConfig = KafkaPublisherConfig(
+          reactiveKafkaDispatcher = "akka.custom.dispatchers.kafka-publisher-dispatcher",
           bootstrapBrokers = s"localhost:${embeddedKafkaConfig.kafkaPort}",
-          topicRegex = "testTopic\\d+",
+          topicRegex = s"$TestTopic\\d+",
           groupId = "testGroup",
           readFromBeginning = true
         )
@@ -91,7 +97,7 @@ class KafkaToNativeElasticsearchAggregatorFLowIntegrationSpec
           EventsIndexPrefix,
           actorSystem,
           schemaRegistry,
-          EventHeaderDescriptor(Some("header/id"), Some("event/eventTs")),
+          EventHeaderDescriptor(Some("header/id"), Some("header/eventTs")),
           ElasticClient.fromClient(elasticsearchClient)
         )
 
@@ -101,8 +107,8 @@ class KafkaToNativeElasticsearchAggregatorFLowIntegrationSpec
         val event2 = aProfileCreatedEvent
 
         eventually {
-          publishToKafka[AnyRef]("testTopic1", event1)
-          publishToKafka[AnyRef]("testTopic2", event2)
+          publishToKafka[AnyRef](s"${TestTopic}1", event1)
+          publishToKafka[AnyRef](s"${TestTopic}2", event2)
 
           val eventualGetResponse1 = new ElasticClient(elasticsearchClient).execute {
             val eventType = event1.getSchema().getName
@@ -121,7 +127,9 @@ class KafkaToNativeElasticsearchAggregatorFLowIntegrationSpec
           }
 
           whenReady(eventualGetResponse2) { getResponse =>
-            getResponse.isExists should be(true)
+            withClue("Expected a document in elasticsearch") {
+              getResponse.isExists should be(true)
+            }
           }(elasticSearchRetrievalPatience, Position.here)
         }(elasticSearchPatience, Position.here)
       }

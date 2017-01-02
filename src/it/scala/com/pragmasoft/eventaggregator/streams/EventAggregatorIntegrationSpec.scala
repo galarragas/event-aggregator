@@ -45,7 +45,7 @@ class EventAggregatorIntegrationSpec
             http.port = 19999
 
             kafka {
-              actor_dispatcher_name = "kafka-publisher-dispatcher"
+              actor_dispatcher_name = "akka.custom.dispatchers.kafka-publisher-dispatcher"
             }
            """.stripMargin
       )

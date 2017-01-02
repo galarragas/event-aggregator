@@ -13,7 +13,7 @@ object GenericRecordEventJsonConverter {
   case class EventHeaderDescriptor(eventIdPath: Option[String], eventTsPath: Option[String]) {
     import com.pragmasoft.eventaggregator.GenericRecordFieldExtractionSupport._
 
-    def extractEventId[T <: GenericRecord](event: T): Option[String] = eventTsPath.flatMap(event.getField[Any]).map(_.toString)
+    def extractEventId[T <: GenericRecord](event: T): Option[String] = eventIdPath.flatMap(event.getField[Any]).map(_.toString)
 
     def extractEventTs[T <: GenericRecord](event: T): Option[Long] = eventTsPath.flatMap(event.getField[Long])
   }

@@ -10,8 +10,7 @@ import com.typesafe.scalalogging.LazyLogging
 import org.apache.kafka.clients.consumer.{ConsumerConfig, ConsumerRecord}
 import org.apache.kafka.common.serialization.ByteArrayDeserializer
 
-case class KafkaPublisherConfig(reactiveKafkaDispatcher: String = "kafka-publisher-dispatcher",
-                                bootstrapBrokers: String, topicRegex: String = ".+", groupId: String, readFromBeginning: Boolean)
+case class KafkaPublisherConfig(reactiveKafkaDispatcher: String, bootstrapBrokers: String, topicRegex: String, groupId: String, readFromBeginning: Boolean)
 
 trait SourceProvider[T, Mat] {
   def source: Source[T, Mat]
@@ -41,5 +40,5 @@ trait KafkaSourceProvider extends SourceProvider[ConsumerRecord[Array[Byte], Arr
   }
 
   override lazy val source: Source[ConsumerRecord[Array[Byte], Array[Byte]], Control] =
-    Consumer.plainSource(consumerProperties, Subscriptions.topicPattern(kafkaConfig.topicRegex))
+    Consumer.atMostOnceSource(consumerProperties, Subscriptions.topics(kafkaConfig.topicRegex))
 }
