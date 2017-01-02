@@ -5,7 +5,7 @@ import java.nio.file.Files
 
 import org.apache.commons.io.FileUtils
 import org.elasticsearch.client.Client
-import org.elasticsearch.common.settings.ImmutableSettings
+import org.elasticsearch.common.settings.Settings
 import org.elasticsearch.node.NodeBuilder._
 
 object ElasticsearchServer {
@@ -20,11 +20,13 @@ class ElasticsearchServer {
 
   private val clusterName = "testElasticsearch"
   private val dataDir = Files.createTempDirectory("elasticsearch_data_").toFile
+  private val homeDir = Files.createTempDirectory("elasticsearch_home_").toFile
 
   val httpPort = findRandomOpenPortOnAllLocalInterfaces()
   val tcpPort = findRandomOpenPortOnAllLocalInterfaces()
 
-  private val settings = ImmutableSettings.settingsBuilder
+  private val settings = Settings.settingsBuilder
+    .put("path.home", dataDir.toString)
     .put("path.data", dataDir.toString)
     .put("http.port", httpPort)
     .put("transport.tcp.port", tcpPort)
@@ -53,9 +55,17 @@ class ElasticsearchServer {
     node.close()
 
     try {
+      FileUtils.forceDelete(homeDir)
+    } catch {
+      case e: Exception =>
+        Console.err.println("Elasticsearch homeDir cleanup failed", e)
+    }
+
+    try {
       FileUtils.forceDelete(dataDir)
     } catch {
-      case e: Exception => // dataDir cleanup failed
+      case e: Exception =>
+        Console.err.println("Elasticsearch dataDir cleanup failed", e)
     }
   }
 

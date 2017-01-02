@@ -14,10 +14,9 @@ import org.json4s.{NoTypeHints, jackson}
 import scala.concurrent.duration._
 import scala.util.{Failure, Success}
 
-class HttpServer(val config: Config)(implicit actorSystem: ActorSystem) extends LazyLogging with Json4sSupport {
+class HttpServer(port: Int)(implicit actorSystem: ActorSystem) extends LazyLogging with Json4sSupport {
 
   private val metaService = MetaService.create()
-  private val port = config.getInt("http.port")
 
   implicit val materializer = ActorMaterializer()
   implicit val timeout = Timeout(10.seconds)

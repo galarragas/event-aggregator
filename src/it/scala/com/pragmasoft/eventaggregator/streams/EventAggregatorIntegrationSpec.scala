@@ -1,6 +1,6 @@
 package com.pragmasoft.eventaggregator.streams
 
-import com.pragmasoft.eventaggregator.{EventAggregator, EventAggregatorArgs}
+import com.pragmasoft.eventaggregator.{EsConfig, EventAggregator, EventAggregatorArgs, KafkaConfig}
 import com.pragmasoft.eventaggregator.support.{ElasticsearchContainer, IntegrationEventsFixture, WithActorSystemIT}
 import com.sksamuel.elastic4s.ElasticClient
 import com.sksamuel.elastic4s.ElasticDsl._
@@ -42,28 +42,18 @@ class EventAggregatorIntegrationSpec
 
       val config = ConfigFactory.parseString(
             s"""
-             elasticsearch {
-              host = "localhost"
-              port = "${elasticsearch.httpPort}"
-
-              indexPrefix = $EventsIndexPrefix
-            }
-
             http.port = 19999
 
             kafka {
-              broker_list = localhost":${embeddedKafkaConfig.kafkaPort}"
-              zookeeper_host = localhost":${embeddedKafkaConfig.zooKeeperPort}"
-
-              topics_regex = ".+"
-              consumer_group = "kafka-event-monitor"
               actor_dispatcher_name = "kafka-publisher-dispatcher"
-              read_from_beginning = true
             }
            """.stripMargin
       )
       val app = new EventAggregator(
-        EventAggregatorArgs.withDefaultsFromConfig(config),
+        EventAggregatorArgs().copy(
+          esConfig = EsConfig(esHost = "localhost", esPort = elasticsearch.httpPort, indexPrefix = EventsIndexPrefix),
+          kafkaConfig = KafkaConfig().copy(kafkaBootstrapBrokers = s"localhost:${embeddedKafkaConfig.kafkaPort}")
+        ),
         config,
         schemaRegistry
       )

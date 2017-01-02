@@ -2,7 +2,7 @@ package com.pragmasoft.eventaggregator.streams
 
 import java.time.Clock
 
-import org.elasticsearch.common.joda.time.format.DateTimeFormat
+import org.joda.time.format.DateTimeFormat
 
 trait ElasticSearchIndexNameProvider {
   def elasticSearchIndex: String

@@ -6,7 +6,7 @@ import com.pragmasoft.eventaggregator.model.KafkaAvroEvent
 import com.sksamuel.elastic4s.source.Indexable
 import org.apache.avro.generic.{GenericDatumWriter, GenericRecord}
 import org.apache.avro.io.EncoderFactory
-import org.elasticsearch.common.joda.time.format.ISODateTimeFormat
+import org.joda.time.format.ISODateTimeFormat
 
 object GenericRecordEventJsonConverter {
 

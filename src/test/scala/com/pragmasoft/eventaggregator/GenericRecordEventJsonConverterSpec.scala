@@ -3,7 +3,7 @@ package com.pragmasoft.eventaggregator
 import com.pragmasoft.eventaggregator.GenericRecordEventJsonConverter.{EventHeaderDescriptor, kafkaAvroEventIndexable}
 import com.pragmasoft.eventaggregator.model.{EventKafkaLocation, KafkaAvroEvent}
 import com.pragmasoft.eventaggregator.support.{ProfileCreated, SpecificRecordEventFixture}
-import org.elasticsearch.common.joda.time.{DateTime, DateTimeZone}
+import org.joda.time.{DateTime, DateTimeZone}
 import org.json4s._
 import org.json4s.native.JsonMethods._
 import org.scalatest.{Matchers, WordSpec}

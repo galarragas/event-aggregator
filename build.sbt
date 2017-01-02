@@ -15,13 +15,15 @@ version := "1.0"
 scalaVersion := "2.11.6"
 
 
-lazy val logbackVersion = "1.1.2"
-lazy val akkaVersion = "2.4.14"
-lazy val akkaHttpVersion = "10.0.0"
-val akkaStreamVersion = akkaVersion
-val akkaStreamKafkaVersion = "0.13"
-val json4sVersion = "3.3.0"
-val schemaRegistryVersion = "3.1.0"
+lazy val LogbackVersion = "1.1.2"
+lazy val AkkaVersion = "2.4.14"
+lazy val AkkaHttpVersion = "10.0.0"
+val AkkaStreamVersion = AkkaVersion
+val AkkaStreamKafkaVersion = "0.13"
+val Json4sVersion = "3.3.0"
+val SchemaRegistryVersion = "3.1.0"
+val ElasticsearchVersion = "2.3.4"
+val Elastic4sVersion = "2.3.2"
 
 enablePlugins(DockerPlugin)
 
@@ -39,11 +41,16 @@ val kafka = Seq(
 
 val embeddedKafka = Seq("net.manub" %% "scalatest-embedded-kafka" % "0.10.0" % "it")
 
-val elastic4sVersion = "1.7.4"
 val elastic4s = Seq(
-  "com.sksamuel.elastic4s" %% "elastic4s-core" % elastic4sVersion,
-  "com.sksamuel.elastic4s" %% "elastic4s-streams" % elastic4sVersion
+  "com.sksamuel.elastic4s" %% "elastic4s-core" % Elastic4sVersion,
+  "com.sksamuel.elastic4s" %% "elastic4s-streams" % Elastic4sVersion
 )
+
+
+val elasticClients = Seq(
+  "org.elasticsearch" % "elasticsearch" % ElasticsearchVersion
+)
+
 
 val jest = Seq( "io.searchbox" % "jest" % "2.0.0" )
 
@@ -61,28 +68,28 @@ val jsonParser = Seq(
 )
 
 val logback = Seq(
-  "ch.qos.logback" % "logback-classic" % logbackVersion
+  "ch.qos.logback" % "logback-classic" % LogbackVersion
 )
 
-val apacheCommonsIo = Seq("commons-io" % "commons-io" % "2.5")
+val apacheCommonsIo = Seq("commons-io" % "commons-io" % "2.0.1")
 
 val kafkaStreams = Seq(
-  ("com.typesafe.akka" %% "akka-stream-kafka" % akkaStreamKafkaVersion).excludeAll(
+  ("com.typesafe.akka" %% "akka-stream-kafka" % AkkaStreamKafkaVersion).excludeAll(
     ExclusionRule( organization = "org.slf4j"),
     ExclusionRule( organization = "log4j")
   ),
-  "com.typesafe.akka" %% "akka-stream-testkit" % akkaStreamVersion % "test"
+  "com.typesafe.akka" %% "akka-stream-testkit" % AkkaStreamVersion % "test"
 )
 
 val akkaHttp = Seq(
-  "com.typesafe.akka" %% "akka-http-core" % akkaHttpVersion,
-  "com.typesafe.akka" %% "akka-http" % akkaHttpVersion,
-  "com.typesafe.akka" %% "akka-http-jackson" % akkaHttpVersion
+  "com.typesafe.akka" %% "akka-http-core" % AkkaHttpVersion,
+  "com.typesafe.akka" %% "akka-http" % AkkaHttpVersion,
+  "com.typesafe.akka" %% "akka-http-jackson" % AkkaHttpVersion
 )
 
 val json4s = Seq(
-  "org.json4s" %% "json4s-jackson" % json4sVersion,
-  "org.json4s" %% "json4s-ext" % json4sVersion
+  "org.json4s" %% "json4s-jackson" % Json4sVersion,
+  "org.json4s" %% "json4s-ext" % Json4sVersion
 ).map {
   _.excludeAll(
     ExclusionRule( organization = "joda-time"),
@@ -95,17 +102,22 @@ val akkaHttpJson = Seq("de.heikoseeberger" %% "akka-http-json4s" % "1.11.0")
 
 val logging = Seq(
   "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0",
-  "com.typesafe.akka" %% "akka-slf4j" % akkaVersion,
-  "com.typesafe.akka" %% "akka-contrib" % akkaVersion,
+  "com.typesafe.akka" %% "akka-slf4j" % AkkaVersion,
+  "com.typesafe.akka" %% "akka-contrib" % AkkaVersion,
   "org.slf4j" % "log4j-over-slf4j" % "1.7.7"       //Kafka uses log4j explicilty. Look class kafka.utils.Logging
 )
 
 val confluentKafkaLibs = Seq(
-  "io.confluent" % "kafka-schema-registry-client" % schemaRegistryVersion,
-  "io.confluent" % "kafka-avro-serializer" % schemaRegistryVersion
+  "io.confluent" % "kafka-schema-registry-client" % SchemaRegistryVersion,
+  "io.confluent" % "kafka-avro-serializer" % SchemaRegistryVersion
+).map(
+  _.excludeAll(
+    ExclusionRule( organization = "org.slf4j"),
+    ExclusionRule( organization = "log4j")
+  )
 )
 
-mainClass in assembly := Some("com.pragmasoft.eventaggregator.KafkaEventAggregatorApp")
+mainClass in assembly := Some("com.pragmasoft.eventaggregator.EventAggregatorApp")
 
 test in assembly := {}
 parallelExecution in IntegrationTest := false

@@ -9,10 +9,9 @@ import com.pragmasoft.eventaggregator.model.KafkaAvroEvent
 import com.pragmasoft.eventaggregator.streams.esrestwriter.EsRestActorPoolSubscriber
 import com.sksamuel.elastic4s.streams.ReactiveElastic.ReactiveElastic
 import com.sksamuel.elastic4s.streams.{RequestBuilder, ResponseListener}
-import com.sksamuel.elastic4s.{BulkCompatibleDefinition, ElasticClient, ElasticDsl}
+import com.sksamuel.elastic4s.{BulkCompatibleDefinition, BulkItemResult, ElasticClient, ElasticDsl}
 import com.typesafe.scalalogging.LazyLogging
 import org.apache.avro.generic.GenericRecord
-import org.elasticsearch.action.bulk.BulkItemResponse
 
 import scala.concurrent.duration._
 
@@ -53,13 +52,13 @@ trait ElasticsearchEventSinkProvider extends SinkProvider[KafkaAvroEvent[Generic
       concurrentRequests = concurrentRequests,
       flushInterval = Some(flushInterval),
       completionFn = { () => logger.info("Subcriber flow completed") },
-      errorFn = { throwable => logger.error("Error during monitoring flow", throwable) },
+      errorFn = { throwable: Throwable => logger.error("Error during monitoring flow", throwable) },
       listener = new ResponseListener {
-        override def onAck(resp: BulkItemResponse): Unit = {
-          if (resp.isFailed) {
-            logger.error("Received failed ack for bulk indexing failure: {}", resp.getFailure.getMessage)
+        override def onAck(resp: BulkItemResult): Unit = {
+          if (resp.isFailure) {
+            logger.error("Received failed ack for bulk indexing failure: {}", resp.failureMessage)
           } else {
-            logger.debug("Received sucessful ack for bulk indexing index {}, id: {}", resp.getIndex, resp.getId)
+            logger.debug("Received sucessful ack for bulk indexing index {}, id: {}", resp.index, resp.id)
           }
         }
       }

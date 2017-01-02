@@ -3,9 +3,9 @@ package com.pragmasoft.eventaggregator.support
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest
 import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsRequest
 import org.elasticsearch.client.Client
-import org.elasticsearch.common.joda.time.DateTime
-import org.elasticsearch.common.joda.time.format.DateTimeFormat
-import org.elasticsearch.indices.{IndexAlreadyExistsException, IndexMissingException}
+import org.elasticsearch.indices.IndexAlreadyExistsException
+import org.joda.time.DateTime
+import org.joda.time.format.DateTimeFormat
 import org.scalatest.concurrent.Eventually.eventually
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Suite}
 
@@ -60,7 +60,7 @@ trait ElasticsearchContainer extends BeforeAndAfterEach with BeforeAndAfterAll {
       !exists.isExists
     }
   } catch {
-    case ignored: IndexMissingException =>
+    case ignored: Exception =>
       ()
   }
 

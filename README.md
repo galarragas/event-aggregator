@@ -42,7 +42,7 @@ The project is still incomplete
 * Simple command line application deployed as a __Docker Container__
 * Designed to support __workload sharing__ through the deployment of multiple instances
 * Aggregates events from __multiple topics__
-* Supports writing to Elasticsearch with both __native Elasticsearch__ protocol or __REST over HTTP__ protocol (the last one is required if you are trying to integrate with the AWS managed Elasticsearch facility)
+* Supports writing to Elasticsearch with both __native Elasticsearch__ transport or __REST over HTTP__  (the last one is required if you are trying to integrate with the AWS Elastisearch Service)
 * Events are assumed to be written in __AVRO format__, you could extend the tool to support different format and I will be more than happy to merge your PR
 * AVRO Schemas are assumed to be managed via __Confluent's Schema Registry__
 * Connection to Elasticsearch is protected via a __Circuit Breaker__ (connection to the Schema Registry is not since the current client doesn't suport)
@@ -62,7 +62,8 @@ A series of possible extension I might work on and I will be happy to accept PRs
 
 The tool is based on
 
-* Scala 2.11 (would migrate to Scala 2.12 when the libraries used will be available)
+* Scala 2.11 
+* Elasticsearch 2.3 - Chosing this version in order to support [AWS Elastisearch Service](http://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/what-is-amazon-elasticsearch-service.html)
 * [Akka 2.4](http://akka.io/) 
 * [Reactive KAFKA](https://github.com/akka/reactive-kafka) and [AKKA Streams](http://doc.akka.io/docs/akka/2.4.14/scala/stream/stream-introduction.html)
 * [Elastic4s](https://github.com/sksamuel/elastic4s)

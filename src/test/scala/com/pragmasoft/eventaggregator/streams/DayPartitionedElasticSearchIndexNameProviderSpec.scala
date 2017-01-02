@@ -2,7 +2,7 @@ package com.pragmasoft.eventaggregator.streams
 
 import java.time.Clock
 
-import org.elasticsearch.common.joda.time.DateTime
+import org.joda.time.DateTime
 import org.mockito.Mockito.when
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{Matchers, WordSpec}

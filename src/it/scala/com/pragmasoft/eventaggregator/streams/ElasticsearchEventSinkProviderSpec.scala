@@ -48,7 +48,7 @@ class ElasticsearchEventSinkProviderSpec
         }
 
         whenReady(eventualGetResponse) { getResponse =>
-          getResponse.isExists should be (true)
+          getResponse.isExists shouldBe true
         }(elasticSearchRetrievalPatience, Position.here)
       }(elasticSearchPatience, Position.here)
     }
@@ -71,7 +71,7 @@ class ElasticsearchEventSinkProviderSpec
         }
 
         whenReady(eventualGetResponse) { getResponse =>
-          getResponse.getHits.totalHits() should be (1)
+          getResponse.getHits.totalHits() shouldBe 1
         }(elasticSearchRetrievalPatience, Position.here)
       }(elasticSearchPatience, Position.here)
     }
