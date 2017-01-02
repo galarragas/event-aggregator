@@ -14,7 +14,6 @@ version := "1.0"
 
 scalaVersion := "2.11.6"
 
-
 lazy val LogbackVersion = "1.1.2"
 lazy val AkkaVersion = "2.4.14"
 lazy val AkkaHttpVersion = "10.0.0"
@@ -226,13 +225,13 @@ dockerfile in docker := {
 
 imageNames in docker := Seq(
   ImageName(
-    repository = s"${name.value}",
-    registry = Some("registry.dev.crwd.mx"),
+    repository = name.value,
+    registry = Some(organization.value),
     tag = Some(version.value)
   ),
   ImageName(
-    registry = Some("registry.dev.crwd.mx"),
-    repository = s"${name.value}",
+    repository = name.value,
+    registry = Some(organization.value),
     tag = Some("latest")
   )
 )
