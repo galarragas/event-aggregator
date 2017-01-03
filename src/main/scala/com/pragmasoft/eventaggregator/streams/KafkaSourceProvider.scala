@@ -1,6 +1,5 @@
 package com.pragmasoft.eventaggregator.streams
 
-import akka.NotUsed
 import akka.kafka.scaladsl.Consumer
 import akka.kafka.scaladsl.Consumer.Control
 import akka.kafka.{ConsumerSettings, Subscriptions}
@@ -40,5 +39,5 @@ trait KafkaSourceProvider extends SourceProvider[ConsumerRecord[Array[Byte], Arr
   }
 
   override lazy val source: Source[ConsumerRecord[Array[Byte], Array[Byte]], Control] =
-    Consumer.atMostOnceSource(consumerProperties, Subscriptions.topics(kafkaConfig.topicRegex))
+    Consumer.atMostOnceSource(consumerProperties, Subscriptions.topicPattern(kafkaConfig.topicRegex))
 }

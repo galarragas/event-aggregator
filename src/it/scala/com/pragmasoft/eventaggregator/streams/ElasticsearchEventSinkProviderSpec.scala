@@ -67,7 +67,7 @@ class ElasticsearchEventSinkProviderSpec
         val eventualGetResponse = new ElasticClient(elasticsearchClient).execute {
           val eventType = event.getSchema().getName
 
-          search in EventsIndex / eventType query matchQuery("data.eventId", event.getId)
+          search in EventsIndex / eventType query matchQuery("data.id", event.getId)
         }
 
         whenReady(eventualGetResponse) { getResponse =>

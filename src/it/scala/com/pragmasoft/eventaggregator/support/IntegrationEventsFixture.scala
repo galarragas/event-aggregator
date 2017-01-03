@@ -9,5 +9,5 @@ trait IntegrationEventsFixture {
     new com.pragmasoft.eventaggregator.support.data.EventHeader(id, correlationId.orNull, eventTs)
   }
 
-  def randomIdNoCorrelation : com.pragmasoft.eventaggregator.support.data.EventHeader = newEventHeader(RandomStringUtils.random(10))
+  def randomIdNoCorrelation : com.pragmasoft.eventaggregator.support.data.EventHeader = newEventHeader(RandomStringUtils.randomAlphanumeric(10))
 }

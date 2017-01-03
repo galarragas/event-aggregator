@@ -1,6 +1,7 @@
 package com.pragmasoft.eventaggregator.streams
 
 import com.pragmasoft.eventaggregator.GenericRecordEventJsonConverter.EventHeaderDescriptor
+import com.pragmasoft.eventaggregator.support.data.ProfileCreated
 import com.pragmasoft.eventaggregator.support.{ElasticsearchContainer, IntegrationEventsFixture, WithActorSystemIT}
 import com.sksamuel.elastic4s.ElasticClient
 import com.sksamuel.elastic4s.ElasticDsl._
@@ -30,14 +31,14 @@ class KafkaToNativeElasticsearchAggregatorFLowIntegrationSpec
   val elasticSearchPatience = PatienceConfig(timeout = Span(10, Seconds), interval = Span(500, Millis))
   val elasticSearchRetrievalPatience = PatienceConfig(timeout = Span(3, Seconds), interval = Span(500, Millis))
 
-  val schemaRegistry = new MockSchemaRegistryClient()
-
   val TestTopic = "testTopic"
 
   "KafkaToElasticsearchMonitorPublishingFLow" should {
-
     "read messages from a kafka topic matching the regex and publish them in ElasticSearch" in withRunningKafka {
       withActorSystem { actorSystem =>
+
+        val schemaRegistry = new MockSchemaRegistryClient()
+        schemaRegistry.register(TestTopic, ProfileCreated.SCHEMA$)
 
         implicit val eventSerializer: Serializer[AnyRef] = new KafkaAvroSerializer(schemaRegistry)
 
@@ -60,6 +61,8 @@ class KafkaToNativeElasticsearchAggregatorFLowIntegrationSpec
 
         flow.startFlow()
 
+        publishStringMessageToKafka(TestTopic, "Test Message")
+
         val event = aProfileCreatedEvent
         publishToKafka[AnyRef](TestTopic, event)
 
@@ -81,6 +84,13 @@ class KafkaToNativeElasticsearchAggregatorFLowIntegrationSpec
 
     "read messages from many kafka topics matching the regex and publish them in ElasticSearch" in withRunningKafka {
       withActorSystem { actorSystem =>
+
+        val TestTopic1 = s"${TestTopic}1"
+        val TestTopic2 = s"${TestTopic}2"
+
+        val schemaRegistry = new MockSchemaRegistryClient()
+        schemaRegistry.register(TestTopic1, ProfileCreated.SCHEMA$)
+        schemaRegistry.register(TestTopic2, ProfileCreated.SCHEMA$)
 
         implicit val eventSerializer = new KafkaAvroSerializer(schemaRegistry)
 
@@ -107,8 +117,8 @@ class KafkaToNativeElasticsearchAggregatorFLowIntegrationSpec
         val event2 = aProfileCreatedEvent
 
         eventually {
-          publishToKafka[AnyRef](s"${TestTopic}1", event1)
-          publishToKafka[AnyRef](s"${TestTopic}2", event2)
+          publishToKafka[AnyRef](TestTopic1, event1)
+          publishToKafka[AnyRef](TestTopic2, event2)
 
           val eventualGetResponse1 = new ElasticClient(elasticsearchClient).execute {
             val eventType = event1.getSchema().getName

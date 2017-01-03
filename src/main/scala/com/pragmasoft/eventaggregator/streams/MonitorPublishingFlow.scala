@@ -18,7 +18,7 @@ trait MonitorPublishingFlow[Materializer] extends KafkaMessageParsingSupport wit
   implicit val materializer = ActorMaterializer(ActorMaterializerSettings(actorSystem).withSupervisionStrategy(alwaysResume("Error trying to save topics content into elastic search")))
 
   def startFlow(): Materializer = {
-    source.log("received-message").withAttributes(Attributes.logLevels(onElement = Logging.DebugLevel))
+    source.log("received-message").withAttributes(Attributes.logLevels(onElement = Logging.InfoLevel))
       .via(parseKafkaMessage)
       .via(filterAndLogFailures[KafkaAvroEvent[GenericRecord]]("Unable to deserialize message, dropping it"))
     .runWith(sink)
