@@ -5,7 +5,6 @@ import java.util.Properties
 import java.util.concurrent.TimeoutException
 import java.util.regex.Pattern
 
-import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.kafka.scaladsl.Consumer
 import akka.kafka.scaladsl.Consumer.Control
@@ -13,10 +12,8 @@ import akka.kafka.{ConsumerSettings, Subscriptions}
 import akka.stream.scaladsl.{Sink, Source}
 import akka.stream.{ActorMaterializer, ActorMaterializerSettings}
 import com.pragmasoft.eventaggregator.ActorSystemProvider
-import com.pragmasoft.eventaggregator.GenericRecordEventJsonConverter.EventHeaderDescriptor
-import com.pragmasoft.eventaggregator.model.{EventKafkaLocation, KafkaAvroEvent}
+import com.pragmasoft.eventaggregator.model.KafkaAvroEvent
 import com.pragmasoft.eventaggregator.support.{IntegrationEventsFixture, WithActorSystemIT}
-import com.sksamuel.elastic4s.ElasticClient
 import com.typesafe.scalalogging.LazyLogging
 import io.confluent.kafka.schemaregistry.client.{MockSchemaRegistryClient, SchemaRegistryClient}
 import io.confluent.kafka.serializers.KafkaAvroSerializer
@@ -52,7 +49,7 @@ class KafkaSourceProviderIntegrationSpec
   val TestTopic = "testTopic"
 
   "KafkaSourceProvider" should {
-    "work with a very simple flow" in withRunningKafka {
+    "work with a very simple flow" ignore withRunningKafka {
       withActorSystem { implicit actorSystem =>
 
         implicit val materializer = ActorMaterializer(ActorMaterializerSettings(actorSystem))
@@ -78,7 +75,7 @@ class KafkaSourceProviderIntegrationSpec
       }
     }
 
-    "read messages from a kafka topic matching the regex" in withRunningKafka {
+    "read messages from a kafka topic called as the subscription" ignore withRunningKafka {
       withActorSystem { implicit _actorSystem  =>
         implicit val materializer = ActorMaterializer(ActorMaterializerSettings(_actorSystem))
 
@@ -109,10 +106,40 @@ class KafkaSourceProviderIntegrationSpec
       }
     }
 
-    "Read and parse messages in a more complex flow" in withRunningKafka {
+    "read messages from a kafka topic matching the regex" in withRunningKafka {
       withActorSystem { implicit _actorSystem  =>
         implicit val materializer = ActorMaterializer(ActorMaterializerSettings(_actorSystem))
 
+        implicit val eventSerializer: Serializer[AnyRef] = new KafkaAvroSerializer(schemaRegistry)
+
+        val flow = new KafkaSourceProvider with ActorSystemProvider {
+          override def kafkaConfig = KafkaPublisherConfig(
+            reactiveKafkaDispatcher = "akka.custom.dispatchers.kafka-publisher-dispatcher",
+            bootstrapBrokers = s"localhost:${embeddedKafkaConfig.kafkaPort}",
+            topicRegex = s"${TestTopic}.+",
+            groupId = "testGroup",
+            readFromBeginning = true
+          )
+
+          override implicit def actorSystem: ActorSystem = _actorSystem
+        }
+
+        val topicName = s"${TestTopic}1"
+        publishStringMessageToKafka(topicName, "Message")
+
+        val messageFuture = flow.source.runWith(Sink.headOption)
+
+        val event = aProfileCreatedEvent
+        publishToKafka[AnyRef](TestTopic, event)
+
+        whenReady(messageFuture) { message =>
+          message.get.value() should be("Message".getBytes)
+        }(elasticSearchRetrievalPatience, Position.here)
+      }
+    }
+
+    "Read and parse messages in a more complex flow" in withRunningKafka {
+      withActorSystem { implicit _actorSystem  =>
         implicit val eventSerializer: Serializer[AnyRef] = new KafkaAvroSerializer(schemaRegistry)
 
         val event = aProfileCreatedEvent
@@ -136,8 +163,6 @@ class KafkaSourceProviderIntegrationSpec
 
           override def sink = Sink.headOption[KafkaAvroEvent[GenericRecord]]
         }
-
-        publishStringMessageToKafka(TestTopic, "Message")
 
         publishToKafka[AnyRef](TestTopic, event)
 
