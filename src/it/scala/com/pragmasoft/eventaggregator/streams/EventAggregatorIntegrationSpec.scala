@@ -38,7 +38,7 @@ class EventAggregatorIntegrationSpec
   implicit val eventSerializer: Serializer[AnyRef] = new KafkaAvroSerializer(schemaRegistry)
 
   "ConfigurableEventMonitorApp" should {
-    "run a KafkaToElasticsearchMonitorPublishingFlow using configuration parameters" in withRunningKafka {
+    "run a Kafka to Elasticsearch Event Aggregator Flow using configuration parameters" in withRunningKafka {
 
       val config = ConfigFactory.parseString(
             s"""

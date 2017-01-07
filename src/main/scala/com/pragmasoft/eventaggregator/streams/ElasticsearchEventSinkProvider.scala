@@ -14,6 +14,7 @@ import com.typesafe.scalalogging.LazyLogging
 import org.apache.avro.generic.GenericRecord
 
 import scala.concurrent.duration._
+import scala.util.Random
 
 trait SinkProvider[T, Mat] {
   def sink: Sink[T, Mat]
@@ -71,7 +72,6 @@ trait RestElasticsearchEventSinkProvider extends SinkProvider[KafkaAvroEvent[Gen
   self: ActorSystemProvider with LazyLogging with ElasticSearchIndexNameProvider =>
 
   def elasticSearchConnectionUrl: String
-  def elasticSearchIndexPrefix: String
 
   def calculateIndexName = () => elasticSearchIndex
 
@@ -80,7 +80,10 @@ trait RestElasticsearchEventSinkProvider extends SinkProvider[KafkaAvroEvent[Gen
   override lazy val sink: Sink[KafkaAvroEvent[GenericRecord], NotUsed] =
     Sink.fromSubscriber(
       ActorSubscriber[KafkaAvroEvent[GenericRecord]](
-        actorSystem.actorOf(EsRestActorPoolSubscriber.props(10, 15, calculateIndexName, elasticSearchConnectionUrl, headerDescriptor))
+        actorSystem.actorOf(
+          EsRestActorPoolSubscriber.props(10, 15, calculateIndexName, elasticSearchConnectionUrl, headerDescriptor),
+          s"EsRestActorPoolSubscriber-${Random.nextLong()}"
+        )
       )
     ).named("ElasticsearchProtocolWriter")
 }

@@ -10,9 +10,9 @@ public class ProfileCreated extends org.apache.avro.specific.SpecificRecordBase 
   public static final org.apache.avro.Schema SCHEMA$ =
           new org.apache.avro.Schema.Parser().parse(
                   "{\"type\":\"record\",\"name\":" +
-                          "\"ProfileCreated\",\"namespace\":\"com.pragmasoft.eventaggregator\"," +
+                          "\"IntegrationProfileCreated\",\"namespace\":\"com.pragmasoft.eventaggregator\"," +
                           "\"fields\":[" +
-                                "{\"name\":\"header\",\"type\":{\"type\":\"record\",\"name\":\"EventHeader\",\"fields\":[" +
+                                "{\"name\":\"header\",\"type\":{\"type\":\"record\",\"name\":\"IntegrationEventHeader\",\"fields\":[" +
                                     "{\"name\":\"id\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}}," +
                                     "{\"name\":\"correlationId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":null}," +
                                     "{\"name\":\"eventTs\",\"type\":\"long\"}" +
@@ -150,23 +150,23 @@ public class ProfileCreated extends org.apache.avro.specific.SpecificRecordBase 
 
   
 
-  /** Creates a new ProfileCreated RecordBuilder */
+  /** Creates a new IntegrationProfileCreated RecordBuilder */
   public static ProfileCreated.Builder newBuilder() {
     return new ProfileCreated.Builder();
   }
 
-  /** Creates a new ProfileCreated RecordBuilder by copying an existing Builder */
+  /** Creates a new IntegrationProfileCreated RecordBuilder by copying an existing Builder */
   public static ProfileCreated.Builder newBuilder(ProfileCreated.Builder other) {
     return new ProfileCreated.Builder(other);
   }
 
-  /** Creates a new ProfileCreated RecordBuilder by copying an existing ProfileCreated instance */
+  /** Creates a new IntegrationProfileCreated RecordBuilder by copying an existing IntegrationProfileCreated instance */
   public static ProfileCreated.Builder newBuilder(ProfileCreated other) {
     return new ProfileCreated.Builder(other);
   }
 
   /**
-   * RecordBuilder for ProfileCreated instances.
+   * RecordBuilder for IntegrationProfileCreated instances.
    */
   public static class Builder extends org.apache.avro.specific.SpecificRecordBuilderBase<ProfileCreated>
     implements org.apache.avro.data.RecordBuilder<ProfileCreated> {
@@ -207,7 +207,7 @@ public class ProfileCreated extends org.apache.avro.specific.SpecificRecordBase 
       }
     }
 
-    /** Creates a Builder by copying an existing ProfileCreated instance */
+    /** Creates a Builder by copying an existing IntegrationProfileCreated instance */
     private Builder(ProfileCreated other) {
             super(ProfileCreated.SCHEMA$);
       if (isValidValue(fields()[0], other.header)) {

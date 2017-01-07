@@ -52,14 +52,6 @@ class KafkaSourceProviderIntegrationSpec
   val TestTopic = "testTopic"
 
   "KafkaSourceProvider" should {
-
-    "be supported by embedded kafka when using a pattern subscriber" in withRunningKafka {
-
-      publishStringMessageToKafka(s"${TestTopic}1", "Message")
-
-      readNextStreamMessageFromRegex(s"${TestTopic}.+") shouldBe "Message"
-    }
-
     "work with a very simple flow" in withRunningKafka {
       withActorSystem { implicit actorSystem =>
 

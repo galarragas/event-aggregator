@@ -8,7 +8,7 @@ package com.pragmasoft.eventaggregator.support;
 @org.apache.avro.specific.AvroGenerated
 public class EventHeader extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
   public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse(
-          "{\"type\":\"record\",\"name\":\"EventHeader\",\"namespace\":\"com.pragmasoft.eventaggregator\",\"fields\":[" +
+          "{\"type\":\"record\",\"name\":\"IntegrationEventHeader\",\"namespace\":\"com.pragmasoft.eventaggregator\",\"fields\":[" +
                   "{\"name\":\"id\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}}," +
                   "{\"name\":\"correlationId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":null}," +
                   "{\"name\":\"eventTs\",\"type\":\"long\"}]}"
@@ -100,23 +100,23 @@ public class EventHeader extends org.apache.avro.specific.SpecificRecordBase imp
     this.eventTs = value;
   }
 
-  /** Creates a new EventHeader RecordBuilder */
+  /** Creates a new IntegrationEventHeader RecordBuilder */
   public static EventHeader.Builder newBuilder() {
     return new EventHeader.Builder();
   }
 
-  /** Creates a new EventHeader RecordBuilder by copying an existing Builder */
+  /** Creates a new IntegrationEventHeader RecordBuilder by copying an existing Builder */
   public static EventHeader.Builder newBuilder(EventHeader.Builder other) {
     return new EventHeader.Builder(other);
   }
 
-  /** Creates a new EventHeader RecordBuilder by copying an existing EventHeader instance */
+  /** Creates a new IntegrationEventHeader RecordBuilder by copying an existing IntegrationEventHeader instance */
   public static EventHeader.Builder newBuilder(EventHeader other) {
     return new EventHeader.Builder(other);
   }
 
   /**
-   * RecordBuilder for EventHeader instances.
+   * RecordBuilder for IntegrationEventHeader instances.
    */
   public static class Builder extends org.apache.avro.specific.SpecificRecordBuilderBase<EventHeader>
     implements org.apache.avro.data.RecordBuilder<EventHeader> {
@@ -147,7 +147,7 @@ public class EventHeader extends org.apache.avro.specific.SpecificRecordBase imp
       }
     }
 
-    /** Creates a Builder by copying an existing EventHeader instance */
+    /** Creates a Builder by copying an existing IntegrationEventHeader instance */
     private Builder(EventHeader other) {
             super(EventHeader.SCHEMA$);
       if (isValidValue(fields()[0], other.id)) {

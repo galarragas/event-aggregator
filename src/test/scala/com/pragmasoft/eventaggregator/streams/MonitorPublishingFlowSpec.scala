@@ -74,8 +74,6 @@ class MonitorPublishingFlowSpec extends WordSpec with Matchers with WithActorSys
 
   lazy val byteDecoder = new DefaultDecoder()
 
-  def aProfileCreatedEvent : ProfileCreated = new ProfileCreated(randomIdNoCorrelation,"userId", "firstName", "lastName", "userName")
-
   class StubbedMonitoringFlow(events: Seq[ConsumerRecord[Array[Byte], Array[Byte]]], override val actorSystem: ActorSystem, override val schemaRegistry: SchemaRegistryClient) extends
     MonitorPublishingFlow[TestSubscriber.Probe[KafkaAvroEvent[GenericRecord]]]
     with LazyLogging

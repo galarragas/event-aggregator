@@ -9,4 +9,6 @@ trait SpecificRecordEventFixture extends RecordEventsSchemas {
   }
 
   def randomIdNoCorrelation : EventHeader = newEventHeader(RandomStringUtils.random(10))
+
+  def aProfileCreatedEvent = new ProfileCreated(randomIdNoCorrelation, "userId", "Stefano", "Galarraga", "stefano.galarraga")
 }

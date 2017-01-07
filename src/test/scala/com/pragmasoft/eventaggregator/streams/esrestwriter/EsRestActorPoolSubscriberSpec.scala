@@ -36,7 +36,7 @@ class EsRestActorPoolSubscriberSpec
   override implicit def patienceConfig = PatienceConfig(timeout = Span(1, Second), interval = Span(50, Millis))
 
   "EsRestActorPoolSubscriber" should {
-    "Index a new document in ES when receiving a MonitoredEvent" in {
+    "Index a new document in ES when receiving a KafkaAvroEvent" in {
       val jestClientFactory = mock[JestClientFactory]
       val mockJestClient = mock[JestClient]
       when(jestClientFactory.getObject).thenReturn(mockJestClient)

@@ -35,8 +35,8 @@ class EsRestWriterActor(factory: JestClientFactory, val elasticSearchIndex: () =
   log.info("EsRestWriterActor: done")
 
   override def receive: Receive = LoggingReceive {
-    case Write(event@KafkaAvroEvent(location, data)) =>
-      log.debug("Asked to write to ES a new monitored event {}", event)
+    case Write(event: KafkaAvroEvent[GenericRecord]) =>
+      log.info("Asked to write to ES a new event {}", event)
       val documentInfo = extractDocumentIndexingInfo(event)(headerDescriptor)
 
       val esIndex = elasticSearchIndex()

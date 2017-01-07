@@ -6,9 +6,9 @@
 package com.pragmasoft.eventaggregator.support.data;
 @SuppressWarnings("all")
 @org.apache.avro.specific.AvroGenerated
-public class EventHeader extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
+public class IntegrationEventHeader extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
   public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse(
-          "{\"type\":\"record\",\"name\":\"EventHeader\",\"namespace\":\"com.pragmasoft.eventaggregator\",\"fields\":[" +
+          "{\"type\":\"record\",\"name\":\"IntegrationEventHeader\",\"namespace\":\"com.pragmasoft.eventaggregator\",\"fields\":[" +
                   "{\"name\":\"id\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}}," +
                   "{\"name\":\"correlationId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":null}," +
                   "{\"name\":\"eventTs\",\"type\":\"long\"}]}"
@@ -23,12 +23,12 @@ public class EventHeader extends org.apache.avro.specific.SpecificRecordBase imp
    * to their default values from the schema.  If that is desired then
    * one should use <code>newBuilder()</code>.
    */
-  public EventHeader() {}
+  public IntegrationEventHeader() {}
 
   /**
    * All-args constructor.
    */
-  public EventHeader(String id, String correlationId, Long eventTs) {
+  public IntegrationEventHeader(String id, String correlationId, Long eventTs) {
     this.id = id;
     this.correlationId = correlationId;
     this.eventTs = eventTs;
@@ -100,26 +100,26 @@ public class EventHeader extends org.apache.avro.specific.SpecificRecordBase imp
     this.eventTs = value;
   }
 
-  /** Creates a new EventHeader RecordBuilder */
-  public static EventHeader.Builder newBuilder() {
-    return new EventHeader.Builder();
+  /** Creates a new IntegrationEventHeader RecordBuilder */
+  public static IntegrationEventHeader.Builder newBuilder() {
+    return new IntegrationEventHeader.Builder();
   }
 
-  /** Creates a new EventHeader RecordBuilder by copying an existing Builder */
-  public static EventHeader.Builder newBuilder(EventHeader.Builder other) {
-    return new EventHeader.Builder(other);
+  /** Creates a new IntegrationEventHeader RecordBuilder by copying an existing Builder */
+  public static IntegrationEventHeader.Builder newBuilder(IntegrationEventHeader.Builder other) {
+    return new IntegrationEventHeader.Builder(other);
   }
 
-  /** Creates a new EventHeader RecordBuilder by copying an existing EventHeader instance */
-  public static EventHeader.Builder newBuilder(EventHeader other) {
-    return new EventHeader.Builder(other);
+  /** Creates a new IntegrationEventHeader RecordBuilder by copying an existing IntegrationEventHeader instance */
+  public static IntegrationEventHeader.Builder newBuilder(IntegrationEventHeader other) {
+    return new IntegrationEventHeader.Builder(other);
   }
 
   /**
-   * RecordBuilder for EventHeader instances.
+   * RecordBuilder for IntegrationEventHeader instances.
    */
-  public static class Builder extends org.apache.avro.specific.SpecificRecordBuilderBase<EventHeader>
-    implements org.apache.avro.data.RecordBuilder<EventHeader> {
+  public static class Builder extends org.apache.avro.specific.SpecificRecordBuilderBase<IntegrationEventHeader>
+    implements org.apache.avro.data.RecordBuilder<IntegrationEventHeader> {
 
     private String id;
     private String correlationId;
@@ -127,11 +127,11 @@ public class EventHeader extends org.apache.avro.specific.SpecificRecordBase imp
 
     /** Creates a new Builder */
     private Builder() {
-      super(EventHeader.SCHEMA$);
+      super(IntegrationEventHeader.SCHEMA$);
     }
 
     /** Creates a Builder by copying an existing Builder */
-    private Builder(EventHeader.Builder other) {
+    private Builder(IntegrationEventHeader.Builder other) {
       super(other);
       if (isValidValue(fields()[0], other.id)) {
         this.id = data().deepCopy(fields()[0].schema(), other.id);
@@ -147,9 +147,9 @@ public class EventHeader extends org.apache.avro.specific.SpecificRecordBase imp
       }
     }
 
-    /** Creates a Builder by copying an existing EventHeader instance */
-    private Builder(EventHeader other) {
-            super(EventHeader.SCHEMA$);
+    /** Creates a Builder by copying an existing IntegrationEventHeader instance */
+    private Builder(IntegrationEventHeader other) {
+            super(IntegrationEventHeader.SCHEMA$);
       if (isValidValue(fields()[0], other.id)) {
         this.id = data().deepCopy(fields()[0].schema(), other.id);
         fieldSetFlags()[0] = true;
@@ -170,7 +170,7 @@ public class EventHeader extends org.apache.avro.specific.SpecificRecordBase imp
     }
 
     /** Sets the value of the 'id' field */
-    public EventHeader.Builder setEventId(String value) {
+    public IntegrationEventHeader.Builder setEventId(String value) {
       validate(fields()[0], value);
       this.id = value;
       fieldSetFlags()[0] = true;
@@ -183,7 +183,7 @@ public class EventHeader extends org.apache.avro.specific.SpecificRecordBase imp
     }
 
     /** Clears the value of the 'id' field */
-    public EventHeader.Builder clearEventId() {
+    public IntegrationEventHeader.Builder clearEventId() {
       id = null;
       fieldSetFlags()[0] = false;
       return this;
@@ -195,7 +195,7 @@ public class EventHeader extends org.apache.avro.specific.SpecificRecordBase imp
     }
 
     /** Sets the value of the 'correlationId' field */
-    public EventHeader.Builder setRequestId(String value) {
+    public IntegrationEventHeader.Builder setRequestId(String value) {
       validate(fields()[1], value);
       this.correlationId = value;
       fieldSetFlags()[1] = true;
@@ -208,7 +208,7 @@ public class EventHeader extends org.apache.avro.specific.SpecificRecordBase imp
     }
 
     /** Clears the value of the 'correlationId' field */
-    public EventHeader.Builder clearRequestId() {
+    public IntegrationEventHeader.Builder clearRequestId() {
       correlationId = null;
       fieldSetFlags()[1] = false;
       return this;
@@ -220,7 +220,7 @@ public class EventHeader extends org.apache.avro.specific.SpecificRecordBase imp
     }
 
     /** Sets the value of the 'eventTs' field */
-    public EventHeader.Builder setOccurredOn(long value) {
+    public IntegrationEventHeader.Builder setOccurredOn(long value) {
       validate(fields()[2], value);
       this.eventTs = value;
       fieldSetFlags()[2] = true;
@@ -233,15 +233,15 @@ public class EventHeader extends org.apache.avro.specific.SpecificRecordBase imp
     }
 
     /** Clears the value of the 'eventTs' field */
-    public EventHeader.Builder clearOccurredOn() {
+    public IntegrationEventHeader.Builder clearOccurredOn() {
       fieldSetFlags()[2] = false;
       return this;
     }
 
     @Override
-    public EventHeader build() {
+    public IntegrationEventHeader build() {
       try {
-        EventHeader record = new EventHeader();
+        IntegrationEventHeader record = new IntegrationEventHeader();
         record.id = fieldSetFlags()[0] ? this.id : (String) defaultValue(fields()[0]);
         record.correlationId = fieldSetFlags()[1] ? this.correlationId : (String) defaultValue(fields()[1]);
         record.eventTs = fieldSetFlags()[2] ? this.eventTs : (Long) defaultValue(fields()[2]);

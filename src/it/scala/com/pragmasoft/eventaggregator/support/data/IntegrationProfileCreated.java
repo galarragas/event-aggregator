@@ -7,13 +7,13 @@ package com.pragmasoft.eventaggregator.support.data;
 
 @SuppressWarnings("all")
 @org.apache.avro.specific.AvroGenerated
-public class ProfileCreated extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
+public class IntegrationProfileCreated extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
   public static final org.apache.avro.Schema SCHEMA$ =
           new org.apache.avro.Schema.Parser().parse(
                   "{\"type\":\"record\",\"name\":" +
-                          "\"ProfileCreated\",\"namespace\":\"com.pragmasoft.eventaggregator\"," +
+                          "\"IntegrationProfileCreated\",\"namespace\":\"com.pragmasoft.eventaggregator\"," +
                           "\"fields\":[" +
-                                "{\"name\":\"header\",\"type\":{\"type\":\"record\",\"name\":\"EventHeader\",\"fields\":[" +
+                                "{\"name\":\"header\",\"type\":{\"type\":\"record\",\"name\":\"IntegrationEventHeader\",\"fields\":[" +
                                     "{\"name\":\"id\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}}," +
                                     "{\"name\":\"correlationId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}],\"default\":null}," +
                                     "{\"name\":\"eventTs\",\"type\":\"long\"}" +
@@ -25,7 +25,7 @@ public class ProfileCreated extends org.apache.avro.specific.SpecificRecordBase 
                             "]}");
 
   public static org.apache.avro.Schema getClassSchema() { return SCHEMA$; }
-  @Deprecated public EventHeader header;
+  @Deprecated public IntegrationEventHeader header;
   @Deprecated public String userId;
   @Deprecated public String firstName;
   @Deprecated public String lastName;
@@ -36,12 +36,12 @@ public class ProfileCreated extends org.apache.avro.specific.SpecificRecordBase 
    * to their default values from the schema.  If that is desired then
    * one should use <code>newBuilder()</code>.
    */
-  public ProfileCreated() {}
+  public IntegrationProfileCreated() {}
 
   /**
    * All-args constructor.
    */
-  public ProfileCreated(EventHeader header, String userId, String firstName, String lastName, String username) {
+  public IntegrationProfileCreated(IntegrationEventHeader header, String userId, String firstName, String lastName, String username) {
     this.header = header;
     this.userId = userId;
     this.firstName = firstName;
@@ -65,7 +65,7 @@ public class ProfileCreated extends org.apache.avro.specific.SpecificRecordBase 
   @SuppressWarnings(value="unchecked")
   public void put(int field$, Object value$) {
     switch (field$) {
-    case 0: header = (EventHeader)value$; break;
+    case 0: header = (IntegrationEventHeader)value$; break;
     case 1: userId = (String)value$; break;
     case 2: firstName = (String)value$; break;
     case 3: lastName = (String)value$; break;
@@ -77,7 +77,7 @@ public class ProfileCreated extends org.apache.avro.specific.SpecificRecordBase 
   /**
    * Gets the value of the 'header' field.
    */
-  public EventHeader getHeader() {
+  public IntegrationEventHeader getHeader() {
     return header;
   }
 
@@ -85,7 +85,7 @@ public class ProfileCreated extends org.apache.avro.specific.SpecificRecordBase 
    * Sets the value of the 'header' field.
    * @param value the value to set.
    */
-  public void setHeader(EventHeader value) {
+  public void setHeader(IntegrationEventHeader value) {
     this.header = value;
   }
 
@@ -151,28 +151,28 @@ public class ProfileCreated extends org.apache.avro.specific.SpecificRecordBase 
 
 
 
-  /** Creates a new ProfileCreated RecordBuilder */
-  public static ProfileCreated.Builder newBuilder() {
-    return new ProfileCreated.Builder();
+  /** Creates a new IntegrationProfileCreated RecordBuilder */
+  public static IntegrationProfileCreated.Builder newBuilder() {
+    return new IntegrationProfileCreated.Builder();
   }
 
-  /** Creates a new ProfileCreated RecordBuilder by copying an existing Builder */
-  public static ProfileCreated.Builder newBuilder(ProfileCreated.Builder other) {
-    return new ProfileCreated.Builder(other);
+  /** Creates a new IntegrationProfileCreated RecordBuilder by copying an existing Builder */
+  public static IntegrationProfileCreated.Builder newBuilder(IntegrationProfileCreated.Builder other) {
+    return new IntegrationProfileCreated.Builder(other);
   }
 
-  /** Creates a new ProfileCreated RecordBuilder by copying an existing ProfileCreated instance */
-  public static ProfileCreated.Builder newBuilder(ProfileCreated other) {
-    return new ProfileCreated.Builder(other);
+  /** Creates a new IntegrationProfileCreated RecordBuilder by copying an existing IntegrationProfileCreated instance */
+  public static IntegrationProfileCreated.Builder newBuilder(IntegrationProfileCreated other) {
+    return new IntegrationProfileCreated.Builder(other);
   }
 
   /**
-   * RecordBuilder for ProfileCreated instances.
+   * RecordBuilder for IntegrationProfileCreated instances.
    */
-  public static class Builder extends org.apache.avro.specific.SpecificRecordBuilderBase<ProfileCreated>
-    implements org.apache.avro.data.RecordBuilder<ProfileCreated> {
+  public static class Builder extends org.apache.avro.specific.SpecificRecordBuilderBase<IntegrationProfileCreated>
+    implements org.apache.avro.data.RecordBuilder<IntegrationProfileCreated> {
 
-    private EventHeader header;
+    private IntegrationEventHeader header;
     private String userId;
     private String firstName;
     private String lastName;
@@ -180,7 +180,7 @@ public class ProfileCreated extends org.apache.avro.specific.SpecificRecordBase 
 
     /** Creates a new Builder */
     private Builder() {
-      super(ProfileCreated.SCHEMA$);
+      super(IntegrationProfileCreated.SCHEMA$);
     }
 
     /** Creates a Builder by copying an existing Builder */
@@ -208,9 +208,9 @@ public class ProfileCreated extends org.apache.avro.specific.SpecificRecordBase 
       }
     }
 
-    /** Creates a Builder by copying an existing ProfileCreated instance */
-    private Builder(ProfileCreated other) {
-            super(ProfileCreated.SCHEMA$);
+    /** Creates a Builder by copying an existing IntegrationProfileCreated instance */
+    private Builder(IntegrationProfileCreated other) {
+            super(IntegrationProfileCreated.SCHEMA$);
       if (isValidValue(fields()[0], other.header)) {
         this.header = data().deepCopy(fields()[0].schema(), other.header);
         fieldSetFlags()[0] = true;
@@ -234,12 +234,12 @@ public class ProfileCreated extends org.apache.avro.specific.SpecificRecordBase 
     }
 
     /** Gets the value of the 'header' field */
-    public EventHeader getHeader() {
+    public IntegrationEventHeader getHeader() {
       return header;
     }
 
     /** Sets the value of the 'header' field */
-    public ProfileCreated.Builder setHeader(EventHeader value) {
+    public IntegrationProfileCreated.Builder setHeader(IntegrationEventHeader value) {
       validate(fields()[0], value);
       this.header = value;
       fieldSetFlags()[0] = true;
@@ -252,7 +252,7 @@ public class ProfileCreated extends org.apache.avro.specific.SpecificRecordBase 
     }
 
     /** Clears the value of the 'header' field */
-    public ProfileCreated.Builder clearHeader() {
+    public IntegrationProfileCreated.Builder clearHeader() {
       header = null;
       fieldSetFlags()[0] = false;
       return this;
@@ -264,7 +264,7 @@ public class ProfileCreated extends org.apache.avro.specific.SpecificRecordBase 
     }
 
     /** Sets the value of the 'userId' field */
-    public ProfileCreated.Builder setUserId(String value) {
+    public IntegrationProfileCreated.Builder setUserId(String value) {
       validate(fields()[1], value);
       this.userId = value;
       fieldSetFlags()[1] = true;
@@ -277,7 +277,7 @@ public class ProfileCreated extends org.apache.avro.specific.SpecificRecordBase 
     }
 
     /** Clears the value of the 'userId' field */
-    public ProfileCreated.Builder clearUserId() {
+    public IntegrationProfileCreated.Builder clearUserId() {
       userId = null;
       fieldSetFlags()[1] = false;
       return this;
@@ -289,7 +289,7 @@ public class ProfileCreated extends org.apache.avro.specific.SpecificRecordBase 
     }
 
     /** Sets the value of the 'firstName' field */
-    public ProfileCreated.Builder setFirstName(String value) {
+    public IntegrationProfileCreated.Builder setFirstName(String value) {
       validate(fields()[2], value);
       this.firstName = value;
       fieldSetFlags()[2] = true;
@@ -302,7 +302,7 @@ public class ProfileCreated extends org.apache.avro.specific.SpecificRecordBase 
     }
 
     /** Clears the value of the 'firstName' field */
-    public ProfileCreated.Builder clearFirstName() {
+    public IntegrationProfileCreated.Builder clearFirstName() {
       firstName = null;
       fieldSetFlags()[2] = false;
       return this;
@@ -314,7 +314,7 @@ public class ProfileCreated extends org.apache.avro.specific.SpecificRecordBase 
     }
 
     /** Sets the value of the 'lastName' field */
-    public ProfileCreated.Builder setLastName(String value) {
+    public IntegrationProfileCreated.Builder setLastName(String value) {
       validate(fields()[3], value);
       this.lastName = value;
       fieldSetFlags()[3] = true;
@@ -327,7 +327,7 @@ public class ProfileCreated extends org.apache.avro.specific.SpecificRecordBase 
     }
 
     /** Clears the value of the 'lastName' field */
-    public ProfileCreated.Builder clearLastName() {
+    public IntegrationProfileCreated.Builder clearLastName() {
       lastName = null;
       fieldSetFlags()[3] = false;
       return this;
@@ -339,7 +339,7 @@ public class ProfileCreated extends org.apache.avro.specific.SpecificRecordBase 
     }
 
     /** Sets the value of the 'username' field */
-    public ProfileCreated.Builder setUsername(String value) {
+    public IntegrationProfileCreated.Builder setUsername(String value) {
       validate(fields()[4], value);
       this.username = value;
       fieldSetFlags()[4] = true;
@@ -352,17 +352,17 @@ public class ProfileCreated extends org.apache.avro.specific.SpecificRecordBase 
     }
 
     /** Clears the value of the 'username' field */
-    public ProfileCreated.Builder clearUsername() {
+    public IntegrationProfileCreated.Builder clearUsername() {
       username = null;
       fieldSetFlags()[4] = false;
       return this;
     }
 
     @Override
-    public ProfileCreated build() {
+    public IntegrationProfileCreated build() {
       try {
-        ProfileCreated record = new ProfileCreated();
-        record.header = fieldSetFlags()[0] ? this.header : (EventHeader) defaultValue(fields()[0]);
+        IntegrationProfileCreated record = new IntegrationProfileCreated();
+        record.header = fieldSetFlags()[0] ? this.header : (IntegrationEventHeader) defaultValue(fields()[0]);
         record.userId = fieldSetFlags()[1] ? this.userId : (String) defaultValue(fields()[1]);
         record.firstName = fieldSetFlags()[2] ? this.firstName : (String) defaultValue(fields()[2]);
         record.lastName = fieldSetFlags()[3] ? this.lastName : (String) defaultValue(fields()[3]);

@@ -9,6 +9,7 @@ import akka.stream.actor.{ActorSubscriber, MaxInFlightRequestStrategy, RequestSt
 import akka.util.Timeout
 import com.pragmasoft.eventaggregator.GenericRecordEventJsonConverter.EventHeaderDescriptor
 import com.pragmasoft.eventaggregator.model.KafkaAvroEvent
+import com.pragmasoft.eventaggregator.streams.esrestwriter.EsRestActorPoolSubscriber.ShutdownTimeout
 import com.pragmasoft.eventaggregator.streams.esrestwriter.EsRestWriterActor.{Write, WriteResult}
 import io.searchbox.client.JestClientFactory
 import io.searchbox.client.config.HttpClientConfig
@@ -17,6 +18,8 @@ import org.apache.avro.generic.GenericRecord
 import scala.concurrent.duration._
 
 object EsRestActorPoolSubscriber {
+  object ShutdownTimeout
+
   def props(
              numberOfWorkers: Int,
              maxQueueSize: Int,
@@ -26,9 +29,20 @@ object EsRestActorPoolSubscriber {
              maxFailures: Int = 5,
              callTimeout: Timeout = 30.seconds,
              resetTimeout: Timeout = 1.minute,
-             subscriptionRequestBatchSize: Int = 5
+             subscriptionRequestBatchSize: Int = 5,
+             maxShutdownTimeout: FiniteDuration = 2.minutes
            ): Props =
-    Props(new EsRestActorPoolSubscriber(numberOfWorkers, maxQueueSize, elasticSearchIndex, jestClientFactory, maxFailures, callTimeout, resetTimeout, subscriptionRequestBatchSize, headerDescriptor))
+    Props(new EsRestActorPoolSubscriber(
+      numberOfWorkers,
+      maxQueueSize,
+      elasticSearchIndex,
+      jestClientFactory,
+      maxFailures,
+      callTimeout,
+      resetTimeout,
+      subscriptionRequestBatchSize,
+      headerDescriptor, maxShutdownTimeout
+    ))
 
   def props(
              numberOfWorkers: Int,
@@ -60,7 +74,8 @@ class EsRestActorPoolSubscriber(
                                  callTimeout: Timeout,
                                  resetTimeout: Timeout,
                                  subscriptionRequestBatchSize: Int,
-                                 headerDescriptor: EventHeaderDescriptor
+                                 headerDescriptor: EventHeaderDescriptor,
+                                 maxShutdownTimeout: FiniteDuration
                                )  extends ActorSubscriber with ActorLogging {
 
   log.info("Initializing EsRestActorPoolSubscriber")
@@ -73,6 +88,8 @@ class EsRestActorPoolSubscriber(
   }
 
   override def receive: Receive = handleWriteProtocol orElse logCircuitEvents
+
+  def shuttingDown: Receive = waitForInFlightMessageCompletion orElse logCircuitEvents
 
   lazy val esWritersPoolCircuitBreakerProxy : ActorRef = {
     val circuitBreakerBuilder =
@@ -102,8 +119,9 @@ class EsRestActorPoolSubscriber(
         .props(
           EsRestWriterActor
             .props(jestClientFactory, elasticSearchIndex, headerDescriptor)
-            .withDispatcher("elasticsearch.writer-dispatcher")
-        )
+            .withDispatcher("akka.custom.dispatchers.elasticsearch.writer-dispatcher")
+        ),
+      "esWritersPoolCircuitBreakerProxy"
     )
 
     context.actorOf(
@@ -113,7 +131,7 @@ class EsRestActorPoolSubscriber(
   }
 
   def handleWriteProtocol : Receive = LoggingReceive {
-    case OnNext(event@KafkaAvroEvent(location, data)) =>
+    case OnNext(event: KafkaAvroEvent[GenericRecord]) =>
       log.debug("New event {}", event)
       assert(inFlightMessages.size < maxQueueSize, s"queued too many: ${inFlightMessages.size}")
 
@@ -134,12 +152,41 @@ class EsRestActorPoolSubscriber(
       log.debug("Number of in-flight events is now {}, number of remaining requested is {}, max in-flight is {}", inFlightMessages.size, remainingRequested, maxQueueSize)
 
     case OnComplete =>
-      log.info("Processing completed successfully")
-      context stop self
+      if(inFlightMessages.isEmpty) {
+        processingCompleted
+      } else {
+        import context.dispatcher
+        context.system.scheduler.scheduleOnce(maxShutdownTimeout, self, ShutdownTimeout)
+        context become shuttingDown
+      }
 
     case OnError(e) =>
       log.info("Processing completed with failure {}", e)
       context stop self
+  }
+
+  private def waitForInFlightMessageCompletion : Receive = {
+    case WriteResult(event, succeeded) =>
+      if(succeeded)
+        log.info("Event {} written successfully", event)
+      else
+        log.warning("Failed to write event {} in ES", event)
+
+      inFlightMessages -= event
+
+      if(inFlightMessages.isEmpty) {
+        processingCompleted
+      }
+
+    case ShutdownTimeout =>
+      log.warning(s"Timeout received while shutting down with ${inFlightMessages.size} messages")
+      context stop self
+
+  }
+
+  private def processingCompleted = {
+    log.info("Processing completed successfully")
+    context stop self
   }
 
   def logCircuitEvents: Receive = {
