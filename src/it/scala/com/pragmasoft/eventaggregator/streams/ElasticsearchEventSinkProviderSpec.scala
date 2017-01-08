@@ -177,6 +177,8 @@ class ElasticsearchEventSinkProviderSpec
     def runFlow(): Unit = {
       flow.run()
     }
+
+    override val esWriterActorDispatcher: String = "akka.custom.dispatchers.elasticsearch.writer-dispatcher"
   }
 
 }

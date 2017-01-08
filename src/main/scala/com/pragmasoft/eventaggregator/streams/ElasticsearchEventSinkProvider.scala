@@ -77,11 +77,13 @@ trait RestElasticsearchEventSinkProvider extends SinkProvider[KafkaAvroEvent[Gen
 
   def  headerDescriptor: EventHeaderDescriptor
 
+  def esWriterActorDispatcher: String
+
   override lazy val sink: Sink[KafkaAvroEvent[GenericRecord], NotUsed] =
     Sink.fromSubscriber(
       ActorSubscriber[KafkaAvroEvent[GenericRecord]](
         actorSystem.actorOf(
-          EsRestActorPoolSubscriber.props(10, 15, calculateIndexName, elasticSearchConnectionUrl, headerDescriptor),
+          EsRestActorPoolSubscriber.props(10, 15, calculateIndexName, elasticSearchConnectionUrl, headerDescriptor, esWriterActorDispatcher),
           s"EsRestActorPoolSubscriber-${Random.nextLong()}"
         )
       )

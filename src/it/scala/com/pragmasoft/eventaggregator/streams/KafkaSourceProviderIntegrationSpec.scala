@@ -147,7 +147,7 @@ class KafkaSourceProviderIntegrationSpec
         val _schemaRegistry = new MockSchemaRegistryClient()
         _schemaRegistry.register(TestTopic, event.getSchema)
 
-        val flow = new MonitorPublishingFlow[Future[Option[KafkaAvroEvent[GenericRecord]]]] with KafkaSourceProvider with ActorSystemProvider with LazyLogging
+        val flow = new EventAggregatorFlow[Future[Option[KafkaAvroEvent[GenericRecord]]]] with KafkaSourceProvider with ActorSystemProvider with LazyLogging
           with SinkProvider[KafkaAvroEvent[GenericRecord], Future[Option[KafkaAvroEvent[GenericRecord]]]] {
           override def kafkaConfig = KafkaPublisherConfig(
             reactiveKafkaDispatcher = "akka.custom.dispatchers.kafka-publisher-dispatcher",
@@ -166,7 +166,7 @@ class KafkaSourceProviderIntegrationSpec
 
         publishToKafka[AnyRef](TestTopic, event)
 
-        val messageFuture = flow.startFlow()
+        val (_, messageFuture) = flow.startFlow()
 
         whenReady(messageFuture) { messageMaybe =>
           val message = messageMaybe.get

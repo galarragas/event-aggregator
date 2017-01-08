@@ -26,6 +26,7 @@ object EsRestActorPoolSubscriber {
              elasticSearchIndex: () => String,
              jestClientFactory: JestClientFactory,
              headerDescriptor: EventHeaderDescriptor,
+             writerActorDispatcher: String,
              maxFailures: Int = 5,
              callTimeout: Timeout = 30.seconds,
              resetTimeout: Timeout = 1.minute,
@@ -37,6 +38,7 @@ object EsRestActorPoolSubscriber {
       maxQueueSize,
       elasticSearchIndex,
       jestClientFactory,
+      writerActorDispatcher,
       maxFailures,
       callTimeout,
       resetTimeout,
@@ -49,9 +51,10 @@ object EsRestActorPoolSubscriber {
              maxQueueSize: Int,
              elasticSearchIndex: () => String,
              esConnectionUrl: String,
-             headerDescriptor: EventHeaderDescriptor
+             headerDescriptor: EventHeaderDescriptor,
+             writerActorDispatcher: String
            ): Props = {
-    props(numberOfWorkers, maxQueueSize, elasticSearchIndex, jestClientFactory(esConnectionUrl), headerDescriptor)
+    props(numberOfWorkers, maxQueueSize, elasticSearchIndex, jestClientFactory(esConnectionUrl), headerDescriptor, writerActorDispatcher)
   }
 
   private [EsRestActorPoolSubscriber] def jestClientFactory(esConnectionUrl: String): JestClientFactory = {
@@ -70,6 +73,7 @@ class EsRestActorPoolSubscriber(
                                  maxQueueSize: Int,
                                  elasticSearchIndex: () => String,
                                  jestClientFactory: JestClientFactory,
+                                 writerActorDispatcher: String,
                                  maxFailures: Int,
                                  callTimeout: Timeout,
                                  resetTimeout: Timeout,
@@ -78,7 +82,7 @@ class EsRestActorPoolSubscriber(
                                  maxShutdownTimeout: FiniteDuration
                                )  extends ActorSubscriber with ActorLogging {
 
-  log.info("Initializing EsRestActorPoolSubscriber")
+  log.debug("Initializing EsRestActorPoolSubscriber")
 
   var inFlightMessages: Set[KafkaAvroEvent[_]] = Set.empty
 
@@ -119,7 +123,7 @@ class EsRestActorPoolSubscriber(
         .props(
           EsRestWriterActor
             .props(jestClientFactory, elasticSearchIndex, headerDescriptor)
-            .withDispatcher("akka.custom.dispatchers.elasticsearch.writer-dispatcher")
+            .withDispatcher(writerActorDispatcher)
         ),
       "esWritersPoolCircuitBreakerProxy"
     )

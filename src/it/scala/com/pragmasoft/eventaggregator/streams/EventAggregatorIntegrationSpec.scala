@@ -1,6 +1,6 @@
 package com.pragmasoft.eventaggregator.streams
 
-import com.pragmasoft.eventaggregator.{EsConfig, EventAggregator, EventAggregatorArgs, KafkaConfig}
+import com.pragmasoft.eventaggregator._
 import com.pragmasoft.eventaggregator.support.{ElasticsearchContainer, IntegrationEventsFixture, WithActorSystemIT}
 import com.sksamuel.elastic4s.ElasticClient
 import com.sksamuel.elastic4s.ElasticDsl._
@@ -9,7 +9,6 @@ import com.typesafe.scalalogging.LazyLogging
 import io.confluent.kafka.schemaregistry.client.MockSchemaRegistryClient
 import io.confluent.kafka.serializers.KafkaAvroSerializer
 import net.manub.embeddedkafka.{EmbeddedKafka, EmbeddedKafkaConfig}
-import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.Serializer
 import org.scalactic.source.Position
 import org.scalatest.concurrent.{Eventually, ScalaFutures}
@@ -37,48 +36,96 @@ class EventAggregatorIntegrationSpec
 
   implicit val eventSerializer: Serializer[AnyRef] = new KafkaAvroSerializer(schemaRegistry)
 
+  val TestTopic = "testTopic"
+
   "ConfigurableEventMonitorApp" should {
-    "run a Kafka to Elasticsearch Event Aggregator Flow using configuration parameters" in withRunningKafka {
+    "run a Kafka to Native Elasticsearch Event Aggregator Flow using configuration parameters" in withRunningKafka {
+      withActorSystem { implicit actorSystem =>
 
-      val config = ConfigFactory.parseString(
-            s"""
-            http.port = 19999
+        val config = ConfigFactory.load()
+        val app = new EventAggregator(
+          EventAggregatorArgs(
+            esConfig = EsConfig(esHost = "localhost", esPort = elasticsearch.tcpPort, indexPrefix = EventsIndexPrefix, useHttp = false),
+            kafkaConfig = KafkaConfig(
+              kafkaBootstrapBrokers = s"localhost:${embeddedKafkaConfig.kafkaPort}",
+              topicRegex = TestTopic,
+              readFromBeginning = true
+            ),
+            eventsSyntaxConfig = EventsSyntaxConfig(eventIdPath = Some("header/id"), eventTsPath = Some("header/eventTs"))
+          ),
+          config,
+          schemaRegistry,
+          Some(elasticsearchClient)
+        )
 
-            kafka {
-              actor_dispatcher_name = "akka.custom.dispatchers.kafka-publisher-dispatcher"
-            }
-           """.stripMargin
-      )
-      val app = new EventAggregator(
-        EventAggregatorArgs().copy(
-          esConfig = EsConfig(esHost = "localhost", esPort = elasticsearch.httpPort, indexPrefix = EventsIndexPrefix),
-          kafkaConfig = KafkaConfig().copy(kafkaBootstrapBrokers = s"localhost:${embeddedKafkaConfig.kafkaPort}")
-        ),
-        config,
-        schemaRegistry
-      )
+        println(s"Connecting to ElasticSearch at localhost:${elasticsearch.httpPort}/$EventsIndex")
 
-      println(s"Connecting to ElasticSearch at localhost:${elasticsearch.httpPort}/$EventsIndex")
+        val event = aProfileCreatedEvent
 
-      app.run()
+        publishToKafka[AnyRef](TestTopic, event)
 
-      val producer = aKafkaProducer[AnyRef]
+        val completed = app.run()
 
-      val event = aProfileCreatedEvent
-      producer.send(new ProducerRecord("testTopic", event))
-
-      eventually {
-        val eventualGetResponse = new ElasticClient(elasticsearchClient).execute {
-          val eventType = event.getSchema().getName
-
-          get id event.getHeader.getId from EventsIndex / eventType
+        completed.onFailure { case failure =>
+          logger.error("Flow failed with exception ", failure)
         }
 
-        whenReady(eventualGetResponse) { getResponse =>
-          getResponse.isExists should be(true)
-        }(elasticSearchRetrievalPatience, Position.here)
+        eventually {
+          val eventualGetResponse = new ElasticClient(elasticsearchClient).execute {
+            val eventType = event.getSchema.getName
+
+            get id event.getHeader.getId from EventsIndex / eventType
+          }
+
+          whenReady(eventualGetResponse) { getResponse =>
+            getResponse.isExists should be(true)
+          }(elasticSearchRetrievalPatience, Position.here)
+        }
+      }
+    }
+
+    "run a Kafka to HTTP Elasticsearch Event Aggregator Flow using configuration parameters" in withRunningKafka {
+      withActorSystem { implicit actorSystem =>
+
+        val config = ConfigFactory.load()
+        val app = new EventAggregator(
+          EventAggregatorArgs(
+            esConfig = EsConfig(esHost = "localhost", esPort = elasticsearch.httpPort, indexPrefix = EventsIndexPrefix, useHttp = true),
+            kafkaConfig = KafkaConfig(
+              kafkaBootstrapBrokers = s"localhost:${embeddedKafkaConfig.kafkaPort}",
+              topicRegex = TestTopic,
+              readFromBeginning = true
+            ),
+            eventsSyntaxConfig = EventsSyntaxConfig(eventIdPath = Some("header/id"), eventTsPath = Some("header/eventTs"))
+          ),
+          config,
+          schemaRegistry
+        )
+
+        println(s"Connecting to ElasticSearch at localhost:${elasticsearch.httpPort}/$EventsIndex")
+
+        val event = aProfileCreatedEvent
+
+        publishToKafka[AnyRef](TestTopic, event)
+
+        val completed = app.run()
+
+        completed.onFailure { case failure =>
+          logger.error("Flow failed with exception ", failure)
+        }
+
+        eventually {
+          val eventualGetResponse = new ElasticClient(elasticsearchClient).execute {
+            val eventType = event.getSchema.getName
+
+            get id event.getHeader.getId from EventsIndex / eventType
+          }
+
+          whenReady(eventualGetResponse) { getResponse =>
+            getResponse.isExists should be(true)
+          }(elasticSearchRetrievalPatience, Position.here)
+        }
       }
     }
   }
-
 }

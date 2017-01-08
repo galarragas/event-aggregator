@@ -12,10 +12,10 @@ import com.typesafe.scalalogging.LazyLogging
 import io.searchbox.action.Action
 import io.searchbox.client.{JestClient, JestClientFactory, JestResult, JestResultHandler}
 import io.searchbox.core.DocumentResult
-import org.mockito.Matchers.{any => anyArg, eq => argEq}
 import org.mockito.Mockito.when
 import org.scalatest.concurrent.Eventually
 import org.scalatest.mockito.MockitoSugar
+import org.scalatest.time.{Milliseconds, Seconds, Span}
 import org.scalatest.{Matchers, WordSpecLike}
 
 import scala.concurrent.Future
@@ -23,6 +23,7 @@ import scala.concurrent.Future
 class EsRestWriterActorSpec extends TestKit(ActorSystem("EsRestWriterActorSpec"))
   with WordSpecLike with MockitoSugar with Matchers with LazyLogging with SpecificRecordEventFixture with Eventually {
 
+  override implicit val patienceConfig: PatienceConfig = PatienceConfig(Span(15, Seconds), Span(200, Milliseconds))
 
   "EsRestWriterActor" should {
 

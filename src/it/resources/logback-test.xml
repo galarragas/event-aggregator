@@ -15,7 +15,6 @@
     <logger name="org.apache.zookeeper" level="WARN"/>
     <logger name="akka.kafka" level="INFO"/>
     <logger name="akka" level="DEBUG"/>
-    <logger name="org.apache.kafka.clients.consumer.KafkaConsumer" level="DEBUG"/>
 
     <root level="INFO">
         <appender-ref ref="STDOUT" />

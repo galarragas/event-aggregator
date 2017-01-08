@@ -14,9 +14,10 @@ class KafkaToRestElasticsearchAggregatorFLow(
     override val elasticSearchConnectionUrl: String,
     override implicit val actorSystem: ActorSystem,
     override val schemaRegistry: SchemaRegistryClient,
-    override val headerDescriptor: EventHeaderDescriptor
+    override val headerDescriptor: EventHeaderDescriptor,
+    override val esWriterActorDispatcher: String
   )
-  extends MonitorPublishingFlow[NotUsed]
+  extends EventAggregatorFlow[NotUsed]
   with KafkaSourceProvider
   with RestElasticsearchEventSinkProvider
   with ActorSystemProvider
@@ -33,7 +34,7 @@ class KafkaToNativeElasticsearchAggregatorFLow(
      override val headerDescriptor: EventHeaderDescriptor,
      override val elasticSearchClient: ElasticClient
    )
-  extends MonitorPublishingFlow[NotUsed]
+  extends EventAggregatorFlow[NotUsed]
     with KafkaSourceProvider
     with ElasticsearchEventSinkProvider
     with ActorSystemProvider

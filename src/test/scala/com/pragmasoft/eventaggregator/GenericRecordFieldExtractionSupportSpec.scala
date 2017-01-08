@@ -9,7 +9,14 @@ class GenericRecordFieldExtractionSupportSpec extends WordSpec with Matchers wit
   "getField" should {
     "Extract field of type String from a single nested property" in {
       record.getField[String]("header/correlationId").value shouldBe "CORRELATION_ID"
+    }
+
+    "Extract field of type Long from a single nested property" in {
       record.getField[Long]("header/eventTs").value shouldBe 100l
+    }
+
+    "Return None for non existent path" in {
+      record.getField[Long]("header/eventTs-wrong") shouldBe None
     }
 
     "fail for empty path" in {

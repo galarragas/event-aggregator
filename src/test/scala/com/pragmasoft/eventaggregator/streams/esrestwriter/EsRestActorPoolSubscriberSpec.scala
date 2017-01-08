@@ -41,7 +41,15 @@ class EsRestActorPoolSubscriberSpec
       val mockJestClient = mock[JestClient]
       when(jestClientFactory.getObject).thenReturn(mockJestClient)
 
-      val esRestActorPoolSubscriber = system.actorOf(EsRestActorPoolSubscriber.props(1, 1, () => "esIndex", jestClientFactory, EventHeaderDescriptor(Some("id"), Some("eventTs"))))
+      val esRestActorPoolSubscriber = system.actorOf(
+        EsRestActorPoolSubscriber.props(
+          numberOfWorkers = 1,
+          maxQueueSize = 1,
+          elasticSearchIndex = () => "esIndex",
+          jestClientFactory = jestClientFactory,
+          headerDescriptor = EventHeaderDescriptor(Some("id"), Some("eventTs")),
+          writerActorDispatcher = "akka.custom.dispatchers.elasticsearch.writer-dispatcher")
+      )
 
       val actorSubscriber = ActorSubscriber[KafkaAvroEvent[EventHeader]](esRestActorPoolSubscriber)
       actorSubscriber.onNext(KafkaAvroEvent(EventKafkaLocation("topic", 2, 100l), randomIdNoCorrelation))
@@ -94,7 +102,8 @@ class EsRestActorPoolSubscriberSpec
             elasticSearchIndex = () => "esIndex",
             jestClientFactory = jestClientFactory,
             subscriptionRequestBatchSize =  1,
-            headerDescriptor = EventHeaderDescriptor(Some("id"), Some("eventTs"))
+            headerDescriptor = EventHeaderDescriptor(Some("id"), Some("eventTs")),
+            writerActorDispatcher = "akka.custom.dispatchers.elasticsearch.writer-dispatcher"
           )
         )
 
@@ -154,7 +163,8 @@ class EsRestActorPoolSubscriberSpec
           jestClientFactory = jestClientFactory,
           subscriptionRequestBatchSize =  1,
           maxFailures = 1,
-          headerDescriptor = EventHeaderDescriptor(Some("id"), Some("eventTs"))
+          headerDescriptor = EventHeaderDescriptor(Some("id"), Some("eventTs")),
+          writerActorDispatcher = "akka.custom.dispatchers.elasticsearch.writer-dispatcher"
         )
       )
 
@@ -223,7 +233,8 @@ class EsRestActorPoolSubscriberSpec
           subscriptionRequestBatchSize =  1,
           maxFailures = 1,
           callTimeout = 200.milliseconds,
-          headerDescriptor = EventHeaderDescriptor(Some("id"), Some("eventTs"))
+          headerDescriptor = EventHeaderDescriptor(Some("id"), Some("eventTs")),
+          writerActorDispatcher = "akka.custom.dispatchers.elasticsearch.writer-dispatcher"
         )
       )
 
