@@ -45,12 +45,6 @@ val elastic4s = Seq(
   "com.sksamuel.elastic4s" %% "elastic4s-streams" % Elastic4sVersion
 )
 
-
-val elasticClients = Seq(
-  "org.elasticsearch" % "elasticsearch" % ElasticsearchVersion
-)
-
-
 val jest = Seq( "io.searchbox" % "jest" % "2.0.0" )
 
 val avro = Seq("org.apache.avro" % "avro" % "1.7.7")
@@ -144,6 +138,7 @@ resolvers ++= Seq (
 assemblyJarName in assembly := s"${name.value}.jar"
 
 assemblyMergeStrategy in assembly := {
+  case PathList("org", "joda", "time", "base", "BaseDateTime.class") => MergeStrategy.first
   case PathList("javax", "annotation", xs @ _*) => MergeStrategy.first
   case PathList("META-INF", "io.netty.versions.properties") => MergeStrategy.first
   case "application.conf" => MergeStrategy.first
@@ -221,14 +216,15 @@ dockerfile in docker := {
   }
 }
 
+val dockerName = "event-aggregator-kafka-0.10-es-2.3"
 imageNames in docker := Seq(
   ImageName(
-    repository = name.value,
+    repository = dockerName,
     registry = Some(organization.value),
     tag = Some(version.value)
   ),
   ImageName(
-    repository = name.value,
+    repository = dockerName,
     registry = Some(organization.value),
     tag = Some("latest")
   )
