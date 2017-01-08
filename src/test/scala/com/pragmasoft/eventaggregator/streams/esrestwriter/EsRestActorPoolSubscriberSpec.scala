@@ -18,7 +18,7 @@ import org.mockito.Mockito.{times, verify, when, atLeast => atLeastTimes}
 import org.reactivestreams.Subscription
 import org.scalatest.concurrent.Eventually
 import org.scalatest.mockito.MockitoSugar
-import org.scalatest.time.{Millis, Second, Span}
+import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{Matchers, WordSpecLike}
 
 import scala.concurrent.Future
@@ -33,7 +33,7 @@ class EsRestActorPoolSubscriberSpec
     with LazyLogging
     with SpecificRecordEventFixture {
 
-  override implicit def patienceConfig = PatienceConfig(timeout = Span(1, Second), interval = Span(50, Millis))
+  override implicit def patienceConfig = PatienceConfig(timeout = Span(10, Seconds), interval = Span(100, Millis))
 
   "EsRestActorPoolSubscriber" should {
     "Index a new document in ES when receiving a KafkaAvroEvent" in {
