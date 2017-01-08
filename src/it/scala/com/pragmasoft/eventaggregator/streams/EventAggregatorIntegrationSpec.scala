@@ -45,7 +45,7 @@ class EventAggregatorIntegrationSpec
         val config = ConfigFactory.load()
         val app = new EventAggregator(
           EventAggregatorArgs(
-            esConfig = EsConfig(esHost = "localhost", esPort = elasticsearch.tcpPort, indexPrefix = EventsIndexPrefix, useHttp = false),
+            esConfig = EsConfig(esHost = "localhost", esPort = Some(elasticsearch.tcpPort), indexPrefix = EventsIndexPrefix, useHttp = false),
             kafkaConfig = KafkaConfig(
               kafkaBootstrapBrokers = s"localhost:${embeddedKafkaConfig.kafkaPort}",
               topicRegex = TestTopic,
@@ -90,7 +90,7 @@ class EventAggregatorIntegrationSpec
         val config = ConfigFactory.load()
         val app = new EventAggregator(
           EventAggregatorArgs(
-            esConfig = EsConfig(esHost = "localhost", esPort = elasticsearch.httpPort, indexPrefix = EventsIndexPrefix, useHttp = true),
+            esConfig = EsConfig(esHost = "localhost", esPort = Some(elasticsearch.httpPort), indexPrefix = EventsIndexPrefix, useHttp = true),
             kafkaConfig = KafkaConfig(
               kafkaBootstrapBrokers = s"localhost:${embeddedKafkaConfig.kafkaPort}",
               topicRegex = TestTopic,

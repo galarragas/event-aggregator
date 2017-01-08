@@ -1,6 +1,9 @@
 # event-aggregator
 Tool To Aggregate Events from Kafka Topics into Elasticsearch
 
+[![Build Status](https://api.travis-ci.org/galarragas/event-aggregator.png)](http://travis-ci.org/galarragas/event-aggregator)
+
+
 ## Event Aggregator
 
 The event aggregator is a simple infrastructure component designed to consume events written into __Kafka__ in __AVRO__ format and write them into __Elasticsearch__.
@@ -34,7 +37,8 @@ Implementing the above mentioned solutions and having logs and events in your lo
 
 ## Status
 
-The project is still incomplete
+The project is ready to be used but I still need to complete the publishing to DockerHUB. 
+Feel free to start using it and contribute!!
 
 
 ## Features
